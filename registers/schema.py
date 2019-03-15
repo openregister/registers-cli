@@ -14,30 +14,28 @@ class Attribute:
     """
     def __init__(self, uid: str, datatype: str, cardinality: str,
                  description: str = None):
-        self._data = {
-            "field": uid,
-            "datatype": datatype,
-            "cardinality": cardinality,
-            "text": description
-        }
+        self._uid = uid
+        self._datatype = datatype
+        self._cardinality = cardinality
+        self._description = description
 
     @property
     def uid(self) -> str:
         """The attribute unique identifier"""
 
-        return self._data["field"]
+        return self._uid
 
     @property
     def datatype(self) -> str:
         """The attribute datatype"""
 
-        return self._data["datatype"]
+        return self._datatype
 
     @property
     def cardinality(self) -> str:
         """The attribute cardinality"""
 
-        return self._data["cardinality"]
+        return self._cardinality
 
 
 def attribute(blob: Blob) -> Attribute:

@@ -2,7 +2,7 @@
 RSF parser
 """
 
-from typing import List
+from typing import List, TextIO, Union
 import json
 from ..blob import Blob
 from ..entry import Entry, Scope
@@ -23,7 +23,7 @@ def load(original: str) -> List[Command]:
     return parse(original.splitlines())
 
 
-def parse(patch_lines: List[str]) -> List[Command]:
+def parse(patch_lines: Union[List[str], TextIO]) -> List[Command]:
     """
     Parses a list of RSF stringified commands.
     """
@@ -70,10 +70,13 @@ def parse_blob(original: str) -> Blob:
 
 def parse_entry(original: str) -> Entry:
     scope, key, timestamp, blob_hash = original.strip().split("\t")
-    scope = parse_scope(scope)
-    blob_hash = parse_hash(blob_hash)
 
-    return Entry(key, scope, timestamp, blob_hash)
+    return Entry(
+        key,
+        parse_scope(scope),
+        timestamp,
+        parse_hash(blob_hash)
+    )
 
 
 def parse_hash(original: str) -> Hash:

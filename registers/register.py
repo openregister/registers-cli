@@ -98,7 +98,7 @@ class Register:
         """
 
         if self._uid is None:
-            return MissingIdentifier("A schema can't be derived unless the \
+            raise MissingIdentifier("A schema can't be derived unless the \
                                      register has an identifier acting as \
                                      primary key")
 

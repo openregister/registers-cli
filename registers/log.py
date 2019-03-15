@@ -2,10 +2,11 @@
 The log representation and utilities.
 """
 
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Optional
 from .rsf.parser import Command, Action
 from .exceptions import OrphanEntry, InsertException
 from .blob import Blob
+from .hash import Hash
 from .record import Record
 from .entry import Entry, Scope
 
@@ -70,7 +71,7 @@ class Log:
             "total-blobs": len(self._blobs)
         }
 
-    def insert(self, obj: Union[Entry, Blob]):
+    def insert(self, obj: Union[Entry, Blob, Hash]):
         """
         Inserts either a blob or an entry to the log.
         """
@@ -87,7 +88,7 @@ class Log:
             msg = "Attempted to insert an unknown object of type {}".format(type(obj)) # NOQA
             raise InsertException(msg)
 
-    def find(self, key: str) -> Blob:
+    def find(self, key: str) -> Optional[Record]:
         """
         Finds the latest blob for the given key.
         """
@@ -113,7 +114,7 @@ def collect(commands: List[Command]) -> Dict[str, Log]:
             blobs[command.value.digest()] = command.value
 
         elif command.action == Action.AppendEntry:
-            if command.value.scope == Scope.System:
+            if command.value.scope == Scope.System:  # type: ignore
                 metadata.insert(command.value)
 
             else:
