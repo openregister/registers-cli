@@ -13,6 +13,7 @@ hypothesis = "*"
 PyYAML = "*"
 click = "*"
 mypy = "*"
+bandit = "*"
 
 [requires]
 python_version = "3.7"
