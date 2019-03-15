@@ -1,0 +1,18 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "*"
+flake8 = "*"
+
+[packages]
+requests = "*"
+hypothesis = "*"
+PyYAML = "*"
+click = "*"
+mypy = "*"
+
+[requires]
+python_version = "3.7"
