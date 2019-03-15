@@ -1,6 +1,7 @@
 from enum import Enum
 from hashlib import sha256
 import json
+from .hash import Hash
 
 
 class Scope(Enum):
@@ -9,11 +10,13 @@ class Scope(Enum):
 
 
 class Entry:
-    def __init__(self, key, scope, timestamp, blob_hash):
+    def __init__(self, key: str, scope: Scope, timestamp: str,
+                 blob_hash: Hash, position: int = None):
         self._key = key
         self._scope = scope
         self._timestamp = timestamp
         self._blob_hash = blob_hash
+        self._position = position
 
     def __eq__(self, other):
         return self.digest() == other.digest()
@@ -33,19 +36,23 @@ class Entry:
 
     def to_json(self):
         """
-        TODO: Needs to change to mimic ORJ to compute Merkle hashes.
+        The entry json representation
         """
 
-        data = {
-            # "entry-number": entry_number,
-            # "index-entry-number": entry_number,
+        return json.dumps([self.to_dict()], separators=(',', ':'),
+                          ensure_ascii=False)
+
+    def to_dict(self):
+        return {
+            "index-entry-number": str(self._position),
+            "entry-number": str(self._position),
+            "entry-timestamp": self._timestamp,
             "key": self._key,
-            "timestamp": self._timestamp,
             "item-hash": [str(self._blob_hash)]
         }
 
-        return json.dumps(data, sort_keys=True, separators=(',', ':'),
-                          ensure_ascii=False)
+    def position(self, number: int):
+        self._position = number
 
     @property
     def key(self):

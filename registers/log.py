@@ -2,10 +2,11 @@
 The log representation and utilities.
 """
 
-from typing import List, Dict, Union, Tuple
+from typing import List, Dict, Union
 from .rsf.parser import Command, Action
 from .exceptions import OrphanEntry, InsertException
 from .blob import Blob
+from .record import Record
 from .entry import Entry, Scope
 
 
@@ -18,6 +19,7 @@ class Log:
                  blobs: Dict[str, Blob] = None):
         self._entries = entries or []
         self._blobs = blobs or {}
+        self._size = len(self._entries)
 
     @property
     def blobs(self):
@@ -33,13 +35,14 @@ class Log:
         """
         return self._entries
 
+    @property
     def size(self):
         """
         The size of the log.
         """
-        return len(self._entries)
+        return self._size
 
-    def snapshot(self, size: int = None):
+    def snapshot(self, size: int = None) -> Dict[str, Record]:
         """
         Collects the state of the log at the given size
         """
@@ -47,23 +50,23 @@ class Log:
         records = {}
 
         for entry in self._entries[:size]:
-            records[entry.key] = self._blobs[entry.blob_hash.digest]
+            records[entry.key] = Record(entry,
+                                        self._blobs[entry.blob_hash.digest])
 
         return records
 
-    def trail(self, key: str, size: int = None) -> List[Tuple[int, Entry]]:
+    def trail(self, key: str, size: int = None) -> List[Entry]:
         """
         Collects the trail of changes for the given key.
         """
-        return [(n + 1, entry) for n, entry in enumerate(self._entries[:size])
-                if entry.key == key]
+        return [entry for entry in self._entries[:size] if entry.key == key]
 
     def stats(self):
         """
         Collects statistics from the log.
         """
         return {
-            "total-entries": len(self._entries),
+            "total-entries": self._size,
             "total-blobs": len(self._blobs)
         }
 
@@ -73,10 +76,12 @@ class Log:
         """
 
         if isinstance(obj, Entry):
+            self._size = self.size + 1
+            obj.position(self._size)
             self._entries.append(obj)
 
         elif isinstance(obj, Blob):
-            self._blobs[obj.digest] = obj
+            self._blobs[obj.digest()] = obj
 
         else:
             msg = "Attempted to insert an unknown object of type {}".format(type(obj)) # NOQA
@@ -105,7 +110,7 @@ def collect(commands: List[Command]) -> Dict[str, Log]:
             pass
 
         elif command.action == Action.AddItem:
-            blobs[command.value.digest] = command.value
+            blobs[command.value.digest()] = command.value
 
         elif command.action == Action.AppendEntry:
             if command.value.scope == Scope.System:

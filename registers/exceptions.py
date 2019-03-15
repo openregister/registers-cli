@@ -17,3 +17,7 @@ class AttributeAlreadyExists(Exception):
 
 class MissingIdentifier(Exception):
     """Found a register without identifier."""
+
+
+class InconsistentRecord(Exception):
+    """Found a record with a blob that does not belong to the entry."""
