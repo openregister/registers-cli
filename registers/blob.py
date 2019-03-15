@@ -11,15 +11,14 @@ class Blob:
         self._data = data
 
     def __hash__(self):
-        return self.digest
+        return self.digest()
 
     def __eq__(self, other):
-        return self.digest == other.digest
+        return self.digest() == other.digest()
 
     def __repr__(self):
         return self.to_json()
 
-    @property
     def digest(self):
         """The digest of the Blob according to V1"""
 

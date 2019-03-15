@@ -71,14 +71,14 @@ def test_country_schema(country_register):
 
 def test_trail(country_register):
     key = "GB"
-    entry = Entry(
+    expected = [Entry(
         key,
         Scope.User,
         "2016-04-05T13:23:05Z",
-        Hash("sha-256", "6b18693874513ba13da54d61aafa7cad0c8f5573f3431d6f1c04b07ddb27d6bb") # NOQA
-    )
+        Hash("sha-256", "6b18693874513ba13da54d61aafa7cad0c8f5573f3431d6f1c04b07ddb27d6bb"), # NOQA
+        6
+    )]
 
-    expected = [(6, entry)]
     actual = country_register.trail(key)
 
     assert actual == expected

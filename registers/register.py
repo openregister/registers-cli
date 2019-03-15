@@ -2,7 +2,7 @@
 The Register representation and utilities to work with it.
 """
 
-from typing import List
+from typing import List, Tuple
 from .rsf.parser import Command
 from .log import Log, collect
 from .schema import Schema, attribute
@@ -41,7 +41,7 @@ class Register:
         if name_blob:
             self._uid = name_blob.get("name")
 
-        if self._log.size() != 0:
+        if self._log.size != 0:
             self._update_date = self._log.entries[-1].timestamp
         else:
             self._update_date = self._metalog.entries[-1].timestamp
@@ -78,14 +78,14 @@ class Register:
 
         return self._log.snapshot()
 
-    def record(self, key: str) -> Blob:
+    def record(self, key: str) -> Tuple[int, Entry, Blob]:
         """
         Collects the record for the given key.
         """
 
-        return self._log.snapshot().get(key)
+        return self._log.find(key)
 
-    def trail(self, key: str) -> List[Entry]:
+    def trail(self, key: str) -> List[Tuple[int, Entry]]:
         """
         Collects the trail of change for the given key.
         """
@@ -117,7 +117,7 @@ class Register:
             # TODO
             "domain": "register.gov.uk",
             "total-records": len(self.records()),
-            "total-entries": self._log.size(),
+            "total-entries": self._log.size,
             "register-record": self._metalog.find("fields"),
             "custodian": self._metalog.find("custodian"),
             "last-updated": self._update_date
