@@ -33,6 +33,9 @@ class Blob:
         return json.dumps(self._data, sort_keys=True, separators=(',', ':'),
                           ensure_ascii=False)
 
+    def to_dict(self):
+        return {k: v for k, v in sorted(self._data.items())}
+
     def get(self, key: str) -> str:
         """
         Attempts to get the value for the given key.

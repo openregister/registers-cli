@@ -2,13 +2,13 @@
 The Register representation and utilities to work with it.
 """
 
-from typing import List, Tuple
+from typing import List, Dict
 from .rsf.parser import Command
 from .log import Log, collect
 from .schema import Schema, attribute
 from .exceptions import MissingIdentifier
-from .blob import Blob
 from .entry import Entry
+from .record import Record
 
 
 class Register:
@@ -46,7 +46,7 @@ class Register:
         else:
             self._update_date = self._metalog.entries[-1].timestamp
 
-    def stats(self):
+    def stats(self) -> Dict[str, int]:
         """
         Collects statistics from both logs.
         """
@@ -57,7 +57,7 @@ class Register:
         }
 
     @property
-    def log(self):
+    def log(self) -> Log:
         """
         The log of user entries.
         """
@@ -65,34 +65,34 @@ class Register:
         return self._log
 
     @property
-    def metalog(self):
+    def metalog(self) -> Log:
         """
         The log of system entries.
         """
         return self._metalog
 
-    def records(self):
+    def records(self) -> Dict[str, Record]:
         """
         Computes the latest log state.
         """
 
         return self._log.snapshot()
 
-    def record(self, key: str) -> Tuple[int, Entry, Blob]:
+    def record(self, key: str) -> Record:
         """
         Collects the record for the given key.
         """
 
         return self._log.find(key)
 
-    def trail(self, key: str) -> List[Tuple[int, Entry]]:
+    def trail(self, key: str) -> List[Entry]:
         """
         Collects the trail of change for the given key.
         """
 
         return self._log.trail(key)
 
-    def schema(self):
+    def schema(self) -> Schema:
         """
         Computes the current schema out of the metalog.
         """
@@ -108,7 +108,7 @@ class Register:
 
         return Schema(self._uid, attrs)
 
-    def context(self):
+    def context(self) -> Dict:
         """
         Collect the register context.
         """

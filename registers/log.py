@@ -6,6 +6,7 @@ from typing import List, Dict, Union
 from .rsf.parser import Command, Action
 from .exceptions import OrphanEntry, InsertException
 from .blob import Blob
+from .record import Record
 from .entry import Entry, Scope
 
 
@@ -41,7 +42,7 @@ class Log:
         """
         return self._size
 
-    def snapshot(self, size: int = None):
+    def snapshot(self, size: int = None) -> Dict[str, Record]:
         """
         Collects the state of the log at the given size
         """
@@ -49,7 +50,8 @@ class Log:
         records = {}
 
         for entry in self._entries[:size]:
-            records[entry.key] = self._blobs[entry.blob_hash.digest]
+            records[entry.key] = Record(entry,
+                                        self._blobs[entry.blob_hash.digest])
 
         return records
 

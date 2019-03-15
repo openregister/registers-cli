@@ -39,13 +39,13 @@ class Entry:
         The entry json representation
         """
 
-        return json.dumps(self.to_dict(), separators=(',', ':'),
+        return json.dumps([self.to_dict()], separators=(',', ':'),
                           ensure_ascii=False)
 
     def to_dict(self):
         return {
-            "index-entry-number": self._position,
-            "entry-number": self._position,
+            "index-entry-number": str(self._position),
+            "entry-number": str(self._position),
             "entry-timestamp": self._timestamp,
             "key": self._key,
             "item-hash": [str(self._blob_hash)]

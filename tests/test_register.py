@@ -1,5 +1,5 @@
 import pytest
-from registers import Register, Attribute, Hash, Entry, Scope, Blob
+from registers import Register, Attribute, Hash, Entry, Scope, Blob, Record
 from registers.rsf import parse
 
 
@@ -85,15 +85,20 @@ def test_trail(country_register):
 
 
 def test_record(country_register):
-    key = "GB"
+    entry = Entry(
+        "GB",
+        Scope.User,
+        "2016-04-05T13:23:05Z",
+        Hash("sha-256", "6b18693874513ba13da54d61aafa7cad0c8f5573f3431d6f1c04b07ddb27d6bb"), # NOQA
+        6
+    )
     blob = Blob({
         "citizen-names": "Briton;British citizen",
         "country": "GB",
         "name": "United Kingdom",
         "official-name": "The United Kingdom of Great Britain and Northern Ireland" # NOQA
     })
-
-    expected = blob
-    actual = country_register.record(key)
+    expected = Record(entry, blob)
+    actual = country_register.record("GB")
 
     assert actual == expected
