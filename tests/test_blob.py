@@ -1,4 +1,4 @@
-from registers.blob import Blob
+from registers import Blob
 
 
 def test_digest():

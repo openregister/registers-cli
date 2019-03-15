@@ -1,5 +1,5 @@
 import pytest
-from registers.register import Register
+from registers import Register, Attribute, Hash, Entry, Scope, Blob
 from registers.rsf import parse
 
 
@@ -7,6 +7,15 @@ from registers.rsf import parse
 def country_rsf():
     with open('tests/fixtures/country.rsf', 'r') as handle:
         return handle.readlines()
+
+
+@pytest.fixture
+def country_register():
+    with open('tests/fixtures/country.rsf', 'r') as handle:
+        commands = parse(handle.readlines())
+        register = Register()
+        register.load_commands(commands)
+        return register
 
 
 def test_load_commands():
@@ -52,11 +61,39 @@ def test_country_records(country_rsf):
     assert actual == 199
 
 
-def test_country_schema(country_rsf):
-    commands = parse(country_rsf)
-    register = Register()
-    register.load_commands(commands)
-    schema = register.schema()
+def test_country_schema(country_register):
+    schema = country_register.schema()
 
     assert schema.primary_key == "country"
     assert len(schema.attributes) == 6
+    assert isinstance(schema.attributes[0], Attribute)
+
+
+def test_trail(country_register):
+    key = "GB"
+    entry = Entry(
+        key,
+        Scope.User,
+        "2016-04-05T13:23:05Z",
+        Hash("sha-256", "6b18693874513ba13da54d61aafa7cad0c8f5573f3431d6f1c04b07ddb27d6bb") # NOQA
+    )
+
+    expected = [(6, entry)]
+    actual = country_register.trail(key)
+
+    assert actual == expected
+
+
+def test_record(country_register):
+    key = "GB"
+    blob = Blob({
+        "citizen-names": "Briton;British citizen",
+        "country": "GB",
+        "name": "United Kingdom",
+        "official-name": "The United Kingdom of Great Britain and Northern Ireland" # NOQA
+    })
+
+    expected = blob
+    actual = country_register.record(key)
+
+    assert actual == expected
