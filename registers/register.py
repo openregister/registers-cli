@@ -7,6 +7,8 @@ from .rsf.parser import Command
 from .log import Log, collect
 from .schema import Schema, attribute
 from .exceptions import MissingIdentifier
+from .blob import Blob
+from .entry import Entry
 
 
 class Register:
@@ -76,6 +78,20 @@ class Register:
 
         return self._log.snapshot()
 
+    def record(self, key: str) -> Blob:
+        """
+        Collects the record for the given key.
+        """
+
+        return self._log.snapshot().get(key)
+
+    def trail(self, key: str) -> List[Entry]:
+        """
+        Collects the trail of change for the given key.
+        """
+
+        return self._log.trail(key)
+
     def schema(self):
         """
         Computes the current schema out of the metalog.
@@ -86,8 +102,9 @@ class Register:
                                      register has an identifier acting as \
                                      primary key")
 
-        attrs = [value for key, value in self._metalog.snapshot().items() if
-                 key.startswith("field:")]
+        attrs = [attribute(value) for key, value
+                 in self._metalog.snapshot().items()
+                 if key.startswith("field:")]
 
         return Schema(self._uid, attrs)
 

@@ -2,7 +2,7 @@
 The log representation and utilities.
 """
 
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Tuple
 from .rsf.parser import Command, Action
 from .exceptions import OrphanEntry, InsertException
 from .blob import Blob
@@ -50,6 +50,13 @@ class Log:
             records[entry.key] = self._blobs[entry.blob_hash.digest]
 
         return records
+
+    def trail(self, key: str, size: int = None) -> List[Tuple[int, Entry]]:
+        """
+        Collects the trail of changes for the given key.
+        """
+        return [(n + 1, entry) for n, entry in enumerate(self._entries[:size])
+                if entry.key == key]
 
     def stats(self):
         """

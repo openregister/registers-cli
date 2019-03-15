@@ -2,9 +2,7 @@ import pytest
 import io
 from registers.rsf.core import Action
 from registers.rsf.parser import load, parse, parse_command
-from registers.blob import Blob
-from registers.entry import Entry, Scope
-from registers.hash import Hash
+from registers import Blob, Entry, Scope, Hash
 from registers.rsf.exceptions import (AppendEntryCommandException,
                                       AddItemCommandException,
                                       AssertRootHashCommandException)

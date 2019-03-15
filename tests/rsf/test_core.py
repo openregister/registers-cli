@@ -1,7 +1,5 @@
 from registers.rsf.core import Command, Action
-from registers.blob import Blob
-from registers.entry import Entry, Scope
-from registers.hash import Hash
+from registers import Blob, Entry, Scope, Hash
 
 
 def test_serialize_add_item_command():
