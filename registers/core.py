@@ -10,4 +10,4 @@ def format_timestamp(dt):
 
     Warning: UTC timezone is assumed.
     """
-    return "{}Z".format(dt.isoformat(timespec='seconds'))
+    return f"{dt.isoformat(timespec='seconds')}Z"

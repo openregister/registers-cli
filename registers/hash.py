@@ -15,7 +15,7 @@ class Hash:
                 self.algorithm == other.algorithm)
 
     def __repr__(self):
-        return "{}:{}".format(self._algorithm, self._digest)
+        return f"{self._algorithm}:{self._digest}"
 
     @property
     def algorithm(self):
