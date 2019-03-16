@@ -37,3 +37,35 @@ class CardinalityMismatch(Exception):
 
 class RepresentationError(Exception):
     """Found a value that is not a string nor a list."""
+
+
+class InvalidCurieValue(Exception):
+    pass
+
+
+class InvalidDatetimeValue(Exception):
+    pass
+
+
+class InvalidNameValue(Exception):
+    pass
+
+
+class InvalidHashValue(Exception):
+    pass
+
+
+class InvalidIntegerValue(Exception):
+    pass
+
+
+class InvalidPeriodValue(Exception):
+    pass
+
+
+class InvalidTimestampValue(Exception):
+    pass
+
+
+class InvalidUrlValue(Exception):
+    pass
