@@ -41,26 +41,3 @@ class Blob:
         Attempts to get the value for the given key.
         """
         return self._data[key]
-
-
-def coerce(data):
-    """
-    Takes a dictionary and attempts to coerce it as a Blob.
-    """
-
-    # trim spaces
-    # discard empty values as nully.
-    # validate PK exists -- schema
-    # validate values -- schema
-    # validate fields exist in the schema -- schema
-    # validate card -- schema
-    # validate card formatting (e.g. ;, do we allow spaces after ;?) -- schema
-    # validate reference integrity -- (out of scope) schema, other registers
-    # guard against equal blobs with different PK -- (out of scope) schema.
-
-    # entry validation
-    # validate key
-    # validate timestamp
-    # validate blob exists
-    # validate previous entry for key has a different blob -- (out of scope)
-    pass

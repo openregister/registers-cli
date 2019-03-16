@@ -8,6 +8,7 @@ pytest = "*"
 flake8 = "*"
 mypy = "*"
 bandit = "*"
+isort = "*"
 
 [packages]
 requests = "*"

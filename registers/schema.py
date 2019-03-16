@@ -2,8 +2,27 @@
 Schema implementation
 """
 from typing import List
+from enum import Enum
 from .exceptions import AttributeAlreadyExists
 from .blob import Blob
+
+
+class Cardinality(Enum):
+    One = "1"
+    Many = "n"
+
+
+class Datatype(Enum):
+    Curie = "curie"
+    Datetime = "datetime"
+    Name = "name"
+    Hash = "hash"
+    Integer = "integer"
+    Period = "period"
+    String = "string"
+    Text = "text"
+    Timestamp = "timestamp"
+    Url = "url"
 
 
 class Attribute:
@@ -12,7 +31,7 @@ class Attribute:
 
     TODO: text, phase, start_date, register, ...
     """
-    def __init__(self, uid: str, datatype: str, cardinality: str,
+    def __init__(self, uid: str, datatype: Datatype, cardinality: Cardinality,
                  description: str = None):
         self._uid = uid
         self._datatype = datatype
@@ -26,13 +45,13 @@ class Attribute:
         return self._uid
 
     @property
-    def datatype(self) -> str:
+    def datatype(self) -> Datatype:
         """The attribute datatype"""
 
         return self._datatype
 
     @property
-    def cardinality(self) -> str:
+    def cardinality(self) -> Cardinality:
         """The attribute cardinality"""
 
         return self._cardinality
@@ -43,8 +62,8 @@ def attribute(blob: Blob) -> Attribute:
     Attempts to transform the given blob to an Attribute.
     """
     uid = blob.get("field")
-    datatype = blob.get("datatype")
-    cardinality = blob.get("cardinality")
+    datatype = Datatype(blob.get("datatype"))
+    cardinality = Cardinality(blob.get("cardinality"))
     description = blob.get("text")
 
     return Attribute(uid, datatype, cardinality, description)

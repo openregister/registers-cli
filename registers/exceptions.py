@@ -21,3 +21,19 @@ class MissingIdentifier(Exception):
 
 class InconsistentRecord(Exception):
     """Found a record with a blob that does not belong to the entry."""
+
+
+class UnknownAttribute(Exception):
+    """Found an unknown attribute."""
+
+
+class MissingPrimaryKey(Exception):
+    """Found a blob without the primary key."""
+
+
+class CardinalityMismatch(Exception):
+    """Found a value with the wrong cardinality."""
+
+
+class RepresentationError(Exception):
+    """Found a value that is not a string nor a list."""
