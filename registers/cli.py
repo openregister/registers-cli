@@ -39,6 +39,28 @@ def init(filepath):
     click.echo(f"Empty register successfully created at {fname}")
 
 
+@cli.command()
+@click.argument("filepath", type=click.Path(exists=False))
+def records(filepath):
+    """Computes the records for the given RSF file."""
+    try:
+        cmds = rsf.read(filepath)
+        r = Register()
+        r.load_commands(cmds)
+
+        if not r.is_ready():
+            error("The given RSF does not have enough information to be used \
+in this command.")
+
+        records = r.records()
+
+        for blob in records.values():
+            click.echo(blob)
+
+    except RegistersException as e:
+        error(str(e))
+
+
 @cli.group()
 def blob():
     pass
