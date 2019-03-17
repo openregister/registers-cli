@@ -2,15 +2,12 @@
 The Register representation and utilities to work with it.
 """
 
-from typing import List, Dict, Union
+from typing import List, Dict
 from .rsf.parser import Command
 from .log import Log, collect
-from .schema import Schema, attribute, Cardinality, Datatype
-from .exceptions import (MissingIdentifier, UnknownAttribute,
-                         MissingPrimaryKey, CardinalityMismatch,
-                         RepresentationError)
+from .schema import Schema, attribute
+from .exceptions import MissingIdentifier
 from .entry import Entry
-from .blob import Blob
 from .record import Record
 
 
