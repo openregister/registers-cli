@@ -41,27 +41,27 @@ def coerce(data: Dict[str, Union[str]], schema: Schema) -> Blob:
 
 def validate(data: Dict[str, Union[str, List[str]]], schema: Schema) -> bool:
     if data.get(schema.primary_key) is None:
-        raise MissingPrimaryKey(data)
+        raise MissingPrimaryKey(schema.primary_key, data)
 
     for key, value in data.items():
         attr = schema.get(key)
 
         if attr is None:
-            raise UnknownAttribute((key, value))
+            raise UnknownAttribute(key, value)
 
         if value is None:
             return True
 
         if isinstance(value, List):
             if attr.cardinality is not Cardinality.Many:
-                raise CardinalityMismatch((key, attr.cardinality, data))
+                raise CardinalityMismatch(key, attr.cardinality.value, value)
 
             for el in value:
                 validate_value(el, attr)
 
         else:
             if attr.cardinality is not Cardinality.One:
-                raise CardinalityMismatch((key, attr.cardinality, data))
+                raise CardinalityMismatch(key, attr.cardinality.value, value)
 
             validate_value(value, attr)
 
@@ -70,7 +70,7 @@ def validate(data: Dict[str, Union[str, List[str]]], schema: Schema) -> bool:
 
 def validate_value(value: str, attr: Attribute):
     if not isinstance(value, str):
-        raise RepresentationError((attr.uid, value))
+        raise RepresentationError(attr.uid, value, attr.datatype.value)
 
     validate_value_datatype(value, attr.datatype)
 
