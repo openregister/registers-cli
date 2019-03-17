@@ -43,6 +43,10 @@ class Log:
         """
         return self._size
 
+    def is_empty(self):
+        """Checks if the log is empty"""
+        return self._size == 0
+
     def snapshot(self, size: int = None) -> Dict[str, Record]:
         """
         Collects the state of the log at the given size

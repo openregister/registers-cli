@@ -91,6 +91,16 @@ class Schema:
         """
         return self._primary_key
 
+    def is_ready(self):
+        """
+        Checks if the schema is ready to be used.
+
+        A schema is ready when it has a primary attribute and a non primary
+        attribute.
+        """
+        return (len(self._attrs) > 1 and
+                self.get(self._primary_key) is not None)
+
     def insert(self, attr: Attribute):
         """
         Inserts a new attribute to the schema.

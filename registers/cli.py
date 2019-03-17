@@ -53,6 +53,11 @@ def validate(blob, rsf_path):
         cmds = rsf.read(rsf_path)
         r = Register()
         r.load_commands(cmds)
+
+        if not r.is_ready():
+            error("The given RSF does not have enough information to be used \
+in this command.")
+
         schema = r.schema()
 
         data = json.loads(blob)

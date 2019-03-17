@@ -41,9 +41,9 @@ class Register:
         if name_blob:
             self._uid = name_blob.get("name")
 
-        if self._log.size != 0:
+        if not self._log.is_empty():
             self._update_date = self._log.entries[-1].timestamp
-        else:
+        elif not self._metalog.is_empty():
             self._update_date = self._metalog.entries[-1].timestamp
 
     def stats(self) -> Dict[str, int]:
@@ -99,8 +99,8 @@ class Register:
 
         if self._uid is None:
             raise MissingIdentifier("A schema can't be derived unless the \
-                                     register has an identifier acting as \
-                                     primary key")
+register has an identifier acting as \
+primary key.")
 
         attrs = [attribute(value) for key, value
                  in self._metalog.snapshot().items()
@@ -124,3 +124,23 @@ class Register:
         }
 
         return result
+
+    def is_ready(self) -> bool:
+        """
+        Checks if the register is ready for data to be inserted.
+
+        A register is considered ready if:
+
+        * It has an identifier acting as primary key.
+        * It has a primary attribute.
+        * It has a schema with at least one non primary attribute.
+        """
+        return self._uid is not None and self.schema().is_ready()
+
+    def is_empty(self) -> bool:
+        """
+        Checks if the register has any data.
+
+        A register is considered empty if the log is empty.
+        """
+        return self._log.is_empty()
