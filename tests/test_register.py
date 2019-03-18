@@ -13,8 +13,8 @@ def country_rsf():
 def country_register():
     with open('tests/fixtures/country.rsf', 'r') as handle:
         commands = parse(handle.readlines())
-        register = Register()
-        register.load_commands(commands)
+        register = Register(commands)
+
         return register
 
 
@@ -23,8 +23,7 @@ def test_load_commands():
 add-item	{"register-name":"Country"}
 append-entry	system	register-name	2018-09-10T10:11:10Z	sha-256:9f21f032105bb320d1f0c4f9c74a84a69e2d0a41932eb4543c331ce73e0bb1fb
 """.splitlines()) # NOQA
-    actual = Register()
-    actual.load_commands(commands)
+    actual = Register(commands)
 
     assert actual.stats() == {
         "data": {"total-entries": 0, "total-blobs": 0},
@@ -32,12 +31,8 @@ append-entry	system	register-name	2018-09-10T10:11:10Z	sha-256:9f21f032105bb320d
     }
 
 
-def test_collect_country(country_rsf):
-    commands = parse(country_rsf)
-    actual = Register()
-    actual.load_commands(commands)
-
-    assert actual.stats() == {
+def test_collect_country(country_register):
+    assert country_register.stats() == {
         "data": {"total-entries": 209, "total-blobs": 209},
         "metadata": {"total-entries": 18, "total-blobs": 16}
     }
@@ -51,11 +46,8 @@ def test_empty_records():
     assert actual == 0
 
 
-def test_country_records(country_rsf):
-    commands = parse(country_rsf)
-    register = Register()
-    register.load_commands(commands)
-    records = register.records()
+def test_country_records(country_register):
+    records = country_register.records()
     actual = len(records)
 
     assert actual == 199

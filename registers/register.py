@@ -16,14 +16,17 @@ class Register:
     Represents a register.
     """
 
-    def __init__(self):
+    def __init__(self, commands: List[Command] = None):
         self._log = Log()
         self._metalog = Log()
         self._commands = []
         self._uid = None
         self._update_date = None
 
-    def load_commands(self, commands: List[Command]):
+        if commands is not None:
+            self._load_commands(commands)
+
+    def _load_commands(self, commands: List[Command]):
         """
         Attempts to process the given commands and build the log and metalog.
         """

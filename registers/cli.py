@@ -45,8 +45,7 @@ def records(filepath):
     """Computes the records for the given RSF file."""
     try:
         cmds = rsf.read(filepath)
-        r = Register()
-        r.load_commands(cmds)
+        r = Register(cmds)
 
         if not r.is_ready():
             error("The given RSF does not have enough information to be used \
@@ -80,8 +79,7 @@ def blob():
 def validate(blob, rsf_path):
     try:
         cmds = rsf.read(rsf_path)
-        r = Register()
-        r.load_commands(cmds)
+        r = Register(cmds)
 
         if not r.is_ready():
             error("The given RSF does not have enough information to be used \
