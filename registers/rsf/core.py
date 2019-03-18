@@ -27,6 +27,10 @@ class Command:
         self._action = action
         self._value = value
 
+    def __eq__(self, other):
+        return (self._action == other.action and
+                self._value == other.value)
+
     def __repr__(self):
         tokens = []
 

@@ -2,7 +2,7 @@
 The log representation and utilities.
 """
 
-from typing import List, Dict, Union, Optional
+from typing import List, Dict, Union, Optional, cast
 from .rsf.parser import Command, Action
 from .exceptions import OrphanEntry, InsertException
 from .blob import Blob
@@ -81,7 +81,7 @@ class Log:
 
         if isinstance(obj, Entry):
             self._size = self.size + 1
-            obj.position(self._size)
+            obj.set_position(self._size)
             self._entries.append(obj)
 
         elif isinstance(obj, Blob):
@@ -99,22 +99,24 @@ class Log:
         return self.snapshot().get(key)
 
 
-def collect(commands: List[Command]) -> Dict[str, Log]:
+def collect(commands: List[Command],
+            log: Optional[Log] = None,
+            metalog: Optional[Log] = None) -> Dict[str, Log]:
     """
     Collects blobs, entries and computes records and schema (?)
     """
-    blobs = {}
-    data = Log()
-    metadata = Log()
+    data = log or Log()
+    metadata = metalog or Log()
+    blobs = {**data.blobs, **metadata.blobs}
 
     for command in commands:
         if command.action == Action.AssertRootHash:
             # Ignore assert commands until we have a way to check their
             # consistency.
-            pass
+            continue
 
         elif command.action == Action.AddItem:
-            blobs[command.value.digest()] = command.value
+            blobs[command.value.digest()] = cast(Blob, command.value)
 
         elif command.action == Action.AppendEntry:
             if command.value.scope == Scope.System:  # type: ignore

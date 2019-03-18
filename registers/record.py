@@ -1,5 +1,6 @@
+from typing import Optional
 import json
-from . import Entry, Blob
+from . import Entry, Blob, Value
 from .exceptions import InconsistentRecord
 
 
@@ -20,7 +21,7 @@ class Record:
     def __repr__(self):
         return self.to_json()
 
-    def to_json(self):
+    def to_json(self) -> str:
         """
         JSON representation as specified by V1
         """
@@ -32,12 +33,12 @@ class Record:
                           ensure_ascii=False)
 
     @property
-    def entry(self):
+    def entry(self) -> Entry:
         return self._entry
 
     @property
-    def blob(self):
+    def blob(self) -> Blob:
         return self._blob
 
-    def get(self, key: str) -> str:
+    def get(self, key: str) -> Optional[Value]:
         return self._blob.get(key)

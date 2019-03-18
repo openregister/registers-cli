@@ -1,6 +1,5 @@
 import re
 from typing import Dict, Union, List
-from .blob import Blob
 from .schema import Schema, Cardinality, Datatype, Attribute
 from .exceptions import (MissingPrimaryKey, CardinalityMismatch,
                          RepresentationError, UnknownAttribute,
@@ -12,31 +11,6 @@ from .exceptions import (MissingPrimaryKey, CardinalityMismatch,
                          InvalidPeriodValue,
                          InvalidTimestampValue,
                          InvalidUrlValue)
-
-
-def coerce(data: Dict[str, Union[str]], schema: Schema) -> Blob:
-    """
-    Takes a dictionary and attempts to coerce it as a Blob and validate
-    against the given Schema.
-    """
-
-    # trim spaces
-    # discard empty values as nully.
-    # x  validate PK exists -- schema
-    # validate values -- schema
-    # x  validate fields exist in the schema -- schema
-    # x  validate card -- schema
-    # guard against equal blobs with different PK -- (out of scope) schema.
-
-    # tsv only
-    # validate card formatting (e.g. ;, do we allow spaces after ;?) -- schema
-
-    # entry validation
-    # validate key
-    # validate timestamp
-    # validate blob exists
-    # validate previous entry for key has a different blob -- (out of scope)
-    pass
 
 
 def validate(data: Dict[str, Union[str, List[str]]], schema: Schema) -> bool:
@@ -85,7 +59,7 @@ TIMESTAMP_RE = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
 URL_RE = re.compile(r'^https?://')
 
 
-def validate_value_datatype(value, datatype: Datatype):
+def validate_value_datatype(value, datatype: Datatype) -> bool:
     if datatype is Datatype.Curie and CURIE_RE.match(value) is None:
         raise InvalidCurieValue(value)
 

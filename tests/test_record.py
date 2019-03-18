@@ -21,6 +21,5 @@ def test_json_repr():
     record = Record(entry, blob)
     expected = '{"GB":{"index-entry-number":"6","entry-number":"6","entry-timestamp":"2016-04-05T13:23:05Z","key":"GB","item":[{"citizen-names":"Briton;British citizen","country":"GB","name":"United Kingdom","official-name":"The United Kingdom of Great Britain and Northern Ireland"}]}}' # NOQA
     actual = record.to_json()
-    print(actual)
 
     assert actual == expected

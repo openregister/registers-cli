@@ -1,9 +1,9 @@
 test:
-	pipenv run pytest
+	pipenv run pytest --doctest-modules
 .PHONY: test
 
 check:
-	pipenv run mypy -m registers
+	pipenv run mypy -p registers --warn-redundant-casts
 .PHONY: check
 
 security_check:
@@ -13,6 +13,3 @@ security_check:
 lint:
 	pipenv run flake8
 .PHONY: lint
-
-
-

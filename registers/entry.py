@@ -1,7 +1,9 @@
+from typing import Optional
 from enum import Enum
 from hashlib import sha256
 import json
 from .hash import Hash
+from .exceptions import MissingEntryKey
 
 
 class Scope(Enum):
@@ -10,8 +12,22 @@ class Scope(Enum):
 
 
 class Entry:
+    """
+    Represent an entry in the `Log` of changes.
+
+
+    TODO:
+    * entry validation
+    * validate key
+    * validate timestamp
+    * validate blob exists
+    * validate previous entry for key has a different blob -- (out of scope)
+    """
     def __init__(self, key: str, scope: Scope, timestamp: str,
                  blob_hash: Hash, position: int = None):
+        if not isinstance(key, str):
+            raise MissingEntryKey()
+
         self._key = key
         self._scope = scope
         self._timestamp = timestamp
@@ -51,21 +67,25 @@ class Entry:
             "item-hash": [str(self._blob_hash)]
         }
 
-    def position(self, number: int):
+    def set_position(self, number: int):
         self._position = number
 
     @property
-    def key(self):
+    def position(self) -> Optional[int]:
+        return self._position
+
+    @property
+    def key(self) -> str:
         return self._key
 
     @property
-    def scope(self):
+    def scope(self) -> Scope:
         return self._scope
 
     @property
-    def timestamp(self):
+    def timestamp(self) -> str:
         return self._timestamp
 
     @property
-    def blob_hash(self):
+    def blob_hash(self) -> Hash:
         return self._blob_hash

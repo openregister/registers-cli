@@ -1,5 +1,6 @@
 import pytest
-from registers import Register, Attribute, Hash, Entry, Scope, Blob, Record
+from registers import (rsf, Register, Attribute, Hash, Entry, Scope, Blob,
+                       Record, Patch)
 from registers.rsf import parse
 
 
@@ -11,11 +12,10 @@ def country_rsf():
 
 @pytest.fixture
 def country_register():
-    with open('tests/fixtures/country.rsf', 'r') as handle:
-        commands = parse(handle.readlines())
-        register = Register(commands)
+    commands = rsf.read('tests/fixtures/country.rsf')
+    register = Register(commands)
 
-        return register
+    return register
 
 
 def test_load_commands():
@@ -94,3 +94,23 @@ def test_record(country_register):
     actual = country_register.record("GB")
 
     assert actual == expected
+
+
+def test_patch_country(country_register):
+    blobs = [
+        Blob({
+            "country": "AX",
+            "name": "Atlantis",
+            "end-date": "1000-01-01",
+        })
+    ]
+    timestamp = "2019-03-21T07:21:00Z"
+    patch = Patch(country_register.schema(), blobs, timestamp)
+    country_register.apply(patch)
+    records = len(country_register.records())
+
+    assert records == 200
+    assert country_register.stats() == {
+        "data": {"total-entries": 210, "total-blobs": 210},
+        "metadata": {"total-entries": 18, "total-blobs": 16}
+    }

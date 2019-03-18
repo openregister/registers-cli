@@ -9,6 +9,7 @@ from .schema import Schema, attribute
 from .exceptions import MissingIdentifier
 from .entry import Entry
 from .record import Record
+from .patch import Patch
 
 
 class Register:
@@ -43,11 +44,23 @@ class Register:
         name_blob = self._metalog.find("name")
         if name_blob:
             self._uid = name_blob.get("name")
+        self._collect_update_date()
 
+    def _collect_update_date(self):
         if not self._log.is_empty():
             self._update_date = self._log.entries[-1].timestamp
         elif not self._metalog.is_empty():
             self._update_date = self._metalog.entries[-1].timestamp
+
+    def apply(self, patch: Patch):
+        """
+        Attempts to apply the given patch to the Register.
+        """
+        pair = collect(patch.commands, self._log, self._metalog)
+        self._log = pair["data"]
+        self._metalog = pair["metadata"]
+        self._commands.extend(patch.commands)
+        self._collect_update_date()
 
     def stats(self) -> Dict[str, int]:
         """
@@ -66,6 +79,10 @@ class Register:
         """
 
         return self._uid
+
+    @property
+    def commands(self):
+        return self._commands
 
     @property
     def log(self) -> Log:
@@ -109,9 +126,8 @@ class Register:
         """
 
         if self._uid is None:
-            raise MissingIdentifier("A schema can't be derived unless the \
-register has an identifier acting as \
-primary key.")
+            raise MissingIdentifier("The schema can't be derived unless the \
+register has an identifier.")
 
         attrs = [attribute(value) for key, value
                  in self._metalog.snapshot().items()
@@ -124,15 +140,25 @@ primary key.")
         Collect the register context.
         """
 
+        if self._uid is None:
+            raise MissingIdentifier("The context can't be derived unless the \
+register has an identifier.")
+
         result = {
-            # TODO
-            "domain": "register.gov.uk",
             "total-records": len(self.records()),
             "total-entries": self._log.size,
-            "register-record": self._metalog.find("fields"),
-            "custodian": self._metalog.find("custodian"),
             "last-updated": self._update_date
         }
+
+        fname = f"register:{self._uid}"
+
+        if self._metalog.find(fname) is not None:
+            result["register-record"] = (self._metalog.find(fname)
+                                         .blob.to_dict())
+
+        if self._metalog.find("custodian") is not None:
+            result["custodian"] = (self._metalog.find("custodian")
+                                   .blob.get("custodian"))
 
         return result
 

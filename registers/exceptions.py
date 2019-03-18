@@ -9,6 +9,11 @@ class RegistersException(Exception):
 
 class OrphanEntry(RegistersException):
     """Found an entry with a reference to a missing blob."""
+    def __init__(self, entry):
+        message = f"Entry {entry.position} for key {entry.key} points to an \
+unknown blob ({entry.blob_hash})"
+
+        super().__init__(message)
 
 
 class InsertException(RegistersException):
@@ -29,6 +34,22 @@ class InconsistentRecord(RegistersException):
 
 class ValidationError(RegistersException):
     """A blob validation error."""
+
+
+class MissingEntryKey(RegistersException):
+    """Found an entry without key."""
+    def __init__(self):
+        message = f"Entries must have a key."
+
+        super().__init__(message)
+
+
+class MissingAttributeIdentifier(RegistersException):
+    """Found an attribute without identifier."""
+    def __init__(self):
+        message = f"Attributes must have a unique identifier."
+
+        super().__init__(message)
 
 
 class UnknownAttribute(ValidationError):
@@ -122,3 +143,7 @@ class InvalidTimestampValue(InvalidValue):
 class InvalidUrlValue(InvalidValue):
     def __init__(self, value):
         super().__init__("url", value)
+
+
+class CommandError(RegistersException):
+    pass
