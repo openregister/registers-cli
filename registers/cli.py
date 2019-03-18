@@ -3,7 +3,7 @@ import json
 import os.path
 
 from .core import EMPTY_ROOT_HASH, __version__
-from . import rsf, Register, validator
+from . import rsf, Register, validator, Datatype
 from .exceptions import RegistersException
 
 
@@ -89,6 +89,36 @@ in this command.")
                     bold=True)
     except json.decoder.JSONDecodeError:
         error("The given blob is not well formed JSON.")
+
+    except RegistersException as e:
+        error(str(e))
+
+
+@cli.group()
+def value():
+    pass
+
+
+@value.command() # NOQA
+@click.argument("token")
+@click.option("--type", "datatype", required=True,
+              type=click.Choice(["curie",
+                                 "datetime",
+                                 "name",
+                                 "hash",
+                                 "integer",
+                                 "period",
+                                 "string",
+                                 "text",
+                                 "timestamp",
+                                 "url"]),
+              help="The datatype TOKEN is expected to conform to.")
+def validate(token, datatype):
+    try:
+        validator.validate_value_datatype(token, Datatype(datatype))
+
+        click.secho(f"'{token}' is a valid '{datatype}'.", fg="green",
+                    bold=True)
 
     except RegistersException as e:
         error(str(e))

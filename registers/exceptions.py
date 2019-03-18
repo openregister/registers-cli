@@ -71,7 +71,7 @@ class InvalidValue(ValidationError):
         self._datatype = value
         self._value = value
 
-        message = f"The value {value} is not a valid {datatype}."
+        message = f"'{value}' is not a valid '{datatype}'."
 
         super().__init__(message)
 
