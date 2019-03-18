@@ -57,6 +57,14 @@ class Register:
         }
 
     @property
+    def uid(self) -> str:
+        """
+        The register unique identifier.
+        """
+
+        return self._uid
+
+    @property
     def log(self) -> Log:
         """
         The log of user entries.

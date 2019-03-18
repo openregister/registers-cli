@@ -3,7 +3,7 @@ import json
 import os.path
 
 from .core import EMPTY_ROOT_HASH, __version__
-from . import rsf, Register, validator, Datatype
+from . import rsf, Register, validator, Datatype, Blob
 from .exceptions import RegistersException
 
 
@@ -63,7 +63,14 @@ in this command.")
 
 @cli.group()
 def blob():
-    pass
+    """
+    Blob operations.
+
+    For example, you can validate that a blob '{"country": "ZZ", "name": "Zeta"}'
+    conforms to the schema defined in the country register in RSF:
+
+        blob validate --rsf path/to/country.rsf '{"country": "ZZ", "name": "Zeta"}'
+    """ # NOQA
 
 
 @blob.command()
@@ -85,8 +92,8 @@ in this command.")
         data = json.loads(blob)
         validator.validate(data, schema)
 
-        click.secho(f"The given blob '{blob}' is valid.", fg="green",
-                    bold=True)
+        click.secho(f"'{Blob(data)}' is valid for the '{r.uid}' register.",
+                    fg="green", bold=True)
     except json.decoder.JSONDecodeError:
         error("The given blob is not well formed JSON.")
 
@@ -96,7 +103,12 @@ in this command.")
 
 @cli.group()
 def value():
-    pass
+    """
+    Value operations.
+
+    For example, you can validate a token 'P2Y' conforms to a 'period' datatype
+    by using `value validate --type period P2Y`.
+    """
 
 
 @value.command() # NOQA
