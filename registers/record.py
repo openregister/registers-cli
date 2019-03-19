@@ -8,8 +8,8 @@ class Record:
     Represents a record.
     """
     def __init__(self, entry: Entry, blob: Blob):
-        if entry.blob_hash.digest != blob.digest():
-            raise InconsistentRecord((entry.key, entry.blob_hash.value))
+        if entry.blob_hash != blob.digest():
+            raise InconsistentRecord((entry.key, entry.blob_hash))
 
         self._entry = entry
         self._blob = blob

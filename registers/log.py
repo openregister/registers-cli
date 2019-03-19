@@ -17,33 +17,33 @@ class Log:
     """
 
     def __init__(self, entries: List[Entry] = None,
-                 blobs: Dict[str, Blob] = None):
+                 blobs: Dict[Hash, Blob] = None):
         self._entries = entries or []
         self._blobs = blobs or {}
         self._size = len(self._entries)
 
     @property
-    def blobs(self):
+    def blobs(self) -> Dict[Hash, Blob]:
         """
         The set of blobs.
         """
         return self._blobs
 
     @property
-    def entries(self):
+    def entries(self) -> List[Entry]:
         """
         The list of entries.
         """
         return self._entries
 
     @property
-    def size(self):
+    def size(self) -> int:
         """
         The size of the log.
         """
         return self._size
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """Checks if the log is empty"""
         return self._size == 0
 
@@ -55,8 +55,7 @@ class Log:
         records = {}
 
         for entry in self._entries[:size]:
-            records[entry.key] = Record(entry,
-                                        self._blobs[entry.blob_hash.digest])
+            records[entry.key] = Record(entry, self._blobs[entry.blob_hash])
 
         return records
 
@@ -125,7 +124,7 @@ def collect(commands: List[Command]) -> Dict[str, Log]:
                 data.insert(command.value)
 
     for entry in data.entries:
-        blob = blobs.get(entry.blob_hash.digest)
+        blob = blobs.get(entry.blob_hash)
 
         if blob is None:
             raise OrphanEntry(entry)
@@ -133,7 +132,7 @@ def collect(commands: List[Command]) -> Dict[str, Log]:
         data.insert(blob)
 
     for entry in metadata.entries:
-        blob = blobs.get(entry.blob_hash.digest)
+        blob = blobs.get(entry.blob_hash)
 
         if blob is None:
             raise OrphanEntry(entry)
