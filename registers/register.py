@@ -2,7 +2,7 @@
 The Register representation and utilities to work with it.
 """
 
-from typing import List, Dict
+from typing import List, Dict, Optional
 from .rsf.parser import Command
 from .log import Log, collect
 from .schema import Schema, attribute
@@ -19,7 +19,7 @@ class Register:
     def __init__(self, commands: List[Command] = None):
         self._log = Log()
         self._metalog = Log()
-        self._commands = []
+        self._commands: List[Command] = []
         self._uid = None
         self._update_date = None
 
@@ -60,7 +60,7 @@ class Register:
         }
 
     @property
-    def uid(self) -> str:
+    def uid(self) -> Optional[str]:
         """
         The register unique identifier.
         """
@@ -89,7 +89,7 @@ class Register:
 
         return self._log.snapshot()
 
-    def record(self, key: str) -> Record:
+    def record(self, key: str) -> Optional[Record]:
         """
         Collects the record for the given key.
         """

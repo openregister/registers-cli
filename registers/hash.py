@@ -10,7 +10,7 @@ class Hash:
     def __hash__(self) -> int:
         return int(self._digest, 16)
 
-    def __eq__(self, other: 'Hash') -> bool:
+    def __eq__(self, other) -> bool:
         return (self.digest == other.digest and
                 self.algorithm == other.algorithm)
 
