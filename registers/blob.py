@@ -1,5 +1,6 @@
 from hashlib import sha256
 import json
+from .hash import Hash
 
 
 class Blob:
@@ -22,7 +23,9 @@ class Blob:
     def digest(self):
         """The digest of the Blob according to V1"""
 
-        return sha256(self.to_json().encode('utf-8')).hexdigest()
+        buffer = self.to_json().encode('utf-8')
+
+        return Hash("sha-256", sha256(buffer).hexdigest())
 
     def to_json(self):
         """
