@@ -25,6 +25,9 @@ def cli():
     pass
 
 
+cli.add_command(commands.build_command)
+
+
 @cli.command()
 @click.argument("filepath", type=click.Path(exists=False))
 def init(filepath):

@@ -1,12 +1,30 @@
 import json
+import click
 from .. import Register, Blob, Entry, Record, Hash
 from ..exceptions import CommandError
+
+
+def error(message):
+    """
+    Sends a message to stderr and exits with code error 1.
+    """
+
+    click.secho(message, fg="red", bold=True, err=True)
+    exit(1)
+
+
+def note(message):
+    click.secho(message, fg="yellow", bold=True)
 
 
 def check_readiness(register: Register):
     if not register.is_ready():
         msg = "The given RSF does not have enough information to be used in this command." # NOQA
         raise CommandError(msg)
+
+
+def serialise_json(obj, stream):
+    json.dump(obj, stream, ensure_ascii=False, indent=2, cls=JsonEncoder)
 
 
 class JsonEncoder(json.JSONEncoder):
@@ -24,3 +42,16 @@ class JsonEncoder(json.JSONEncoder):
             return obj.to_dict()
 
         return json.JSONEncoder.default(self, obj)
+
+
+def progressbar(iterable, **kwargs):
+    tpl = click.style("%(label)s  [%(bar)s] %(info)s", fg="bright_yellow")
+    bar = click.progressbar(iterable,
+                            show_eta=False,
+                            show_percent=True,
+                            bar_template=tpl,
+                            **kwargs)
+
+    bar.short_limit = 0.1
+
+    return bar
