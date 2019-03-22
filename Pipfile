@@ -3,6 +3,9 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
+[scripts]
+serve = "python -m http.server --bind 127.0.0.1 --directory build 8000"
+
 [dev-packages]
 pytest = "~=4.3"
 flake8 = "~=3.7"
