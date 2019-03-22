@@ -45,7 +45,7 @@ class JsonEncoder(json.JSONEncoder):
 
 
 def progressbar(iterable, **kwargs):
-    tpl = click.style("%(label)s  [%(bar)s] %(info)s", fg="bright_yellow")
+    tpl = click.style("[%(bar)s] %(info)s %(label)s", fg="bright_yellow")
     bar = click.progressbar(iterable,
                             show_eta=False,
                             show_percent=True,

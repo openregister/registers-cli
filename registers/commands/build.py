@@ -1,5 +1,4 @@
 import click
-import json
 import csv
 import shutil
 from pathlib import Path
@@ -25,7 +24,7 @@ def build_command(rsf_filename):
         build_path.mkdir()
 
         blobs_path = build_path.joinpath("items")
-        # entries_path = build_path.joinpath("entries")
+        entries_path = build_path.joinpath("entries")
         # records_path = build_path.joinpath("records")
 
         cmds = rsf.read(rsf_filename)
@@ -33,6 +32,7 @@ def build_command(rsf_filename):
 
         utils.check_readiness(register)
         build_blobs(blobs_path, register)
+        build_entries(entries_path, register)
 
         click.secho("Build complete.", fg="green", bold=True)
 
@@ -50,11 +50,11 @@ def build_blobs(path: Path, register: Register):
     headers = [attr.uid for attr in sch.attributes]
     collection = register.log.blobs
 
-    with open(f"{path}.json", "w") as stream_collection:
+    with open(f"{path}/index.json", "w") as stream_collection:
         utils.serialise_json({repr(k): v for k, v in collection.items()},
                              stream_collection)
 
-    with open(f"{path}.csv", "w") as stream_collection:
+    with open(f"{path}/index.csv", "w") as stream_collection:
         writer = csv.writer(stream_collection)
         writer.writerow(headers)
 
@@ -66,6 +66,35 @@ def build_blobs(path: Path, register: Register):
                 writer.writerow(row)
 
                 write_resource(path.joinpath(repr(key)), blob, headers)
+
+
+def build_entries(path: Path, register: Register):
+    if path.exists():
+        path.rmdir()
+
+    path.mkdir()
+
+    headers = ["index-entry-number",
+               "entry-number",
+               "entry-timestamp",
+               "key",
+               "item-hash"]
+    collection = register.log.entries
+
+    with open(f"{path}/index.json", "w") as stream_collection:
+        utils.serialise_json(collection, stream_collection)
+
+    with open(f"{path}/index.csv", "w") as stream_collection:
+        writer = csv.writer(stream_collection)
+        writer.writerow(headers)
+
+        with utils.progressbar(collection, label='Building entries') as bar:
+            for entry in bar:
+                row = xsv.serialise_object(entry)
+                writer.writerow(row)
+
+                write_resource(path.joinpath(repr(entry.position)),
+                               entry, headers)
 
 
 def write_resource(path: Path, obj, headers):
