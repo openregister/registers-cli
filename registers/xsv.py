@@ -1,3 +1,16 @@
+# -*- coding: utf-8 -*-
+
+"""
+This module implements the functions to serialise and deserialise XSV
+(Character Separated Values) typically comma ``,`` or tab ``\t``.
+
+Multivalues have the delimiter semi-colon ``;`` and it can't be changed.
+
+
+:copyright: © 2019 Crown Copyright (Government Digital Service)
+:license: MIT, see LICENSE for more details.
+"""
+
 from typing import List, NewType, Dict, cast, Optional
 import csv
 from io import StringIO
@@ -12,8 +25,7 @@ from .validator import validate
 Row = NewType("Row", List[str])
 
 
-def serialise_object(obj, headers: List[str] = None,
-                     delimiter: str = ",") -> Row:
+def serialise_object(obj, headers: List[str] = None) -> Row:
     """
     Builds a row from the given object and headers.
 
@@ -25,11 +37,12 @@ def serialise_object(obj, headers: List[str] = None,
     >>> blob_hash = blob.digest()
     >>> entry = Entry("A", Scope.User, "2019-03-19T10:11:12Z", blob_hash, 1)
     >>> serialise_object(entry)
-    ['1', '1', '2019-03-19T10:11:12Z', 'A', 'sha-256:5dd4fe3b0de91882dae86b223ca531b5c8f2335d9ee3fd0ab18dfdc2871d0c61']
+    ['1', '1', '2019-03-19T10:11:12Z', 'A', \
+'sha-256:5dd4fe3b0de91882dae86b223ca531b5c8f2335d9ee3fd0ab18dfdc2871d0c61']
 
     >>> serialise_object(Record(entry, blob), ["foo", "bar"])
     ['1', '1', '2019-03-19T10:11:12Z', 'A', 'abc', 'xyz']
-    """ # NOQA
+    """
 
     if isinstance(obj, Blob):
         if headers is None:
@@ -38,14 +51,14 @@ csv row you must pass the expected list of headers.")
 
         return cast(Row, [obj.get(header) for header in headers])
 
-    elif isinstance(obj, Entry):
+    if isinstance(obj, Entry):
         return cast(Row, [str(obj.position),
                           str(obj.position),
                           obj.timestamp,
                           obj.key,
                           str(obj.blob_hash)])
 
-    elif isinstance(obj, Record):
+    if isinstance(obj, Record):
         if headers is None:
             raise RegistersException("In order to serialise a record as a \
 csv row you must pass the expected list of headers for the blob.")
@@ -55,8 +68,7 @@ csv row you must pass the expected list of headers for the blob.")
 
         return cast(Row, result)
 
-    else:
-        raise ValueError("Unknown type of object.")
+    raise ValueError("Unknown type of object.")
 
 
 def serialise_value(value: Value) -> str:
@@ -169,9 +181,9 @@ def split_token(token: str) -> List[str]:
     >>> split_token('"foo";"bar;far"')
     ['foo', 'bar;far']
     """
-    r = csv.reader(StringIO(token), delimiter=";")
+    stream = csv.reader(StringIO(token), delimiter=";")
 
-    return next(r)
+    return next(stream)
 
 
 def coerce(data: Dict[str, str], schema: Schema) -> Blob:
