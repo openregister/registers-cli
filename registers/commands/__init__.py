@@ -9,7 +9,7 @@ This package implements the commands for the Command Line Interface.
 :license: MIT, see LICENSE for more details.
 """
 
-from . import patch, blob, utils
+from . import utils
 from .build import build_command
 from .init import init_command
 from .context import context_command
