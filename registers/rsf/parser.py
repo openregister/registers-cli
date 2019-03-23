@@ -1,6 +1,13 @@
+# -*- coding: utf-8 -*-
+
 """
-RSF parser
+This module implements the RSF parser.
+
+
+:copyright: © 2019 Crown Copyright (Government Digital Service)
+:license: MIT, see LICENSE for more details.
 """
+
 
 from typing import List, TextIO, Union
 import json
@@ -8,7 +15,6 @@ from ..blob import Blob
 from ..entry import Entry, Scope
 from ..hash import Hash
 from .exceptions import (UnknownCommand,
-                         UnknownScope,
                          AppendEntryCommandException,
                          AddItemCommandException,
                          AssertRootHashCommandException)
@@ -65,15 +71,23 @@ def parse_command(original: str) -> Command:
 
 
 def parse_blob(original: str) -> Blob:
+    """
+    Parses a JSON string into a ``Blob``.
+    """
+
     return Blob(json.loads(original.strip()))
 
 
 def parse_entry(original: str) -> Entry:
+    """
+    Parses a string into an ``Entry``.
+    """
+
     scope, key, timestamp, blob_hash = original.strip().split("\t")
 
     return Entry(
         key,
-        parse_scope(scope),
+        Scope(scope),
         timestamp,
         parse_hash(blob_hash)
     )
@@ -87,12 +101,3 @@ def parse_hash(original: str) -> Hash:
     algorithm, digest = original.strip().split(':')
 
     return Hash(algorithm, digest)
-
-
-def parse_scope(original: str) -> Scope:
-    if original == Scope.User.value:
-        return Scope.User
-    elif original == Scope.System.value:
-        return Scope.System
-    else:
-        raise UnknownScope()

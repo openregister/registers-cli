@@ -2,10 +2,6 @@ class UnknownCommand(Exception):
     """An unknown command was found."""
 
 
-class UnknownScope(Exception):
-    """An unknown scope was found."""
-
-
 class UnexpectedEntry(Exception):
     """An entry with an unexpected structure was found."""
 
