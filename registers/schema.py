@@ -1,6 +1,15 @@
+# -*- coding: utf-8 -*-
+
 """
-Schema implementation
+This module implements the Schema representation, its parts: Attribute,
+Cardinality, Datatype and helper functions to operate on them.
+
+
+:copyright: © 2019 Crown Copyright (Government Digital Service)
+:license: MIT, see LICENSE for more details.
 """
+
+
 from typing import List, Optional, cast
 import json
 from enum import Enum
@@ -9,11 +18,19 @@ from .blob import Blob
 
 
 class Cardinality(Enum):
+    """
+    The attribute cardinality representation.
+    """
+
     One = "1"
     Many = "n"
 
 
 class Datatype(Enum):
+    """
+    The attribute datatype representation.
+    """
+
     Curie = "curie"
     Datetime = "datetime"
     Name = "name"
@@ -28,7 +45,7 @@ class Datatype(Enum):
 
 class Attribute:
     """
-    Schema attribute representation.
+    The schema attribute representation.
 
     TODO: text, phase, start_date, register, ...
     """
@@ -55,6 +72,10 @@ class Attribute:
             yield item
 
     def to_dict(self):
+        """
+        The attribute dictionary representation.
+        """
+
         data = {"field": self._uid,
                 "datatype": repr(self._datatype.value),
                 "cardinality": repr(self._cardinality.value)}
@@ -65,6 +86,10 @@ class Attribute:
         return data
 
     def to_json(self):
+        """
+        The attribute json representation.
+        """
+
         return json.dumps(dict(self), separators=(',', ':'),
                           ensure_ascii=False)
 
@@ -161,7 +186,7 @@ def string(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.String, Cardinality.One)
+    return Attribute(uid, Datatype.String, Cardinality.One, description)
 
 
 def string_set(uid: str, description: str = None) -> Attribute:
@@ -173,7 +198,7 @@ def string_set(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.String, Cardinality.Many)
+    return Attribute(uid, Datatype.String, Cardinality.Many, description)
 
 
 def integer(uid: str, description: str = None) -> Attribute:
@@ -185,7 +210,7 @@ def integer(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Integer, Cardinality.One)
+    return Attribute(uid, Datatype.Integer, Cardinality.One, description)
 
 
 def integer_set(uid: str, description: str = None) -> Attribute:
@@ -197,7 +222,7 @@ def integer_set(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Integer, Cardinality.Many)
+    return Attribute(uid, Datatype.Integer, Cardinality.Many, description)
 
 
 def curie(uid: str, description: str = None) -> Attribute:
@@ -209,7 +234,7 @@ def curie(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Curie, Cardinality.One)
+    return Attribute(uid, Datatype.Curie, Cardinality.One, description)
 
 
 def curie_set(uid: str, description: str = None) -> Attribute:
@@ -221,7 +246,7 @@ def curie_set(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Curie, Cardinality.Many)
+    return Attribute(uid, Datatype.Curie, Cardinality.Many, description)
 
 
 def datetime(uid: str, description: str = None) -> Attribute:
@@ -233,7 +258,7 @@ def datetime(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Datetime, Cardinality.One)
+    return Attribute(uid, Datatype.Datetime, Cardinality.One, description)
 
 
 def datetime_set(uid: str, description: str = None) -> Attribute:
@@ -245,7 +270,7 @@ def datetime_set(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Datetime, Cardinality.Many)
+    return Attribute(uid, Datatype.Datetime, Cardinality.Many, description)
 
 
 def name(uid: str, description: str = None) -> Attribute:
@@ -257,7 +282,7 @@ def name(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Name, Cardinality.One)
+    return Attribute(uid, Datatype.Name, Cardinality.One, description)
 
 
 def name_set(uid: str, description: str = None) -> Attribute:
@@ -269,7 +294,7 @@ def name_set(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Name, Cardinality.Many)
+    return Attribute(uid, Datatype.Name, Cardinality.Many, description)
 
 
 def hash(uid: str, description: str = None) -> Attribute:
@@ -281,7 +306,7 @@ def hash(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Hash, Cardinality.One)
+    return Attribute(uid, Datatype.Hash, Cardinality.One, description)
 
 
 def hash_set(uid: str, description: str = None) -> Attribute:
@@ -293,7 +318,7 @@ def hash_set(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Hash, Cardinality.Many)
+    return Attribute(uid, Datatype.Hash, Cardinality.Many, description)
 
 
 def period(uid: str, description: str = None) -> Attribute:
@@ -305,7 +330,7 @@ def period(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Period, Cardinality.One)
+    return Attribute(uid, Datatype.Period, Cardinality.One, description)
 
 
 def period_set(uid: str, description: str = None) -> Attribute:
@@ -317,7 +342,7 @@ def period_set(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Period, Cardinality.Many)
+    return Attribute(uid, Datatype.Period, Cardinality.Many, description)
 
 
 def text(uid: str, description: str = None) -> Attribute:
@@ -329,7 +354,7 @@ def text(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Text, Cardinality.One)
+    return Attribute(uid, Datatype.Text, Cardinality.One, description)
 
 
 def text_set(uid: str, description: str = None) -> Attribute:
@@ -341,7 +366,7 @@ def text_set(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Text, Cardinality.Many)
+    return Attribute(uid, Datatype.Text, Cardinality.Many, description)
 
 
 def timestamp(uid: str, description: str = None) -> Attribute:
@@ -353,7 +378,7 @@ def timestamp(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Timestamp, Cardinality.One)
+    return Attribute(uid, Datatype.Timestamp, Cardinality.One, description)
 
 
 def timestamp_set(uid: str, description: str = None) -> Attribute:
@@ -365,7 +390,7 @@ def timestamp_set(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Timestamp, Cardinality.Many)
+    return Attribute(uid, Datatype.Timestamp, Cardinality.Many, description)
 
 
 def url(uid: str, description: str = None) -> Attribute:
@@ -377,7 +402,7 @@ def url(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Url, Cardinality.One)
+    return Attribute(uid, Datatype.Url, Cardinality.One, description)
 
 
 def url_set(uid: str, description: str = None) -> Attribute:
@@ -389,4 +414,4 @@ def url_set(uid: str, description: str = None) -> Attribute:
     True
     """
 
-    return Attribute(uid, Datatype.Url, Cardinality.Many)
+    return Attribute(uid, Datatype.Url, Cardinality.Many, description)
