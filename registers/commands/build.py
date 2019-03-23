@@ -11,8 +11,9 @@ This module implements the build command.
 import csv
 import shutil
 from pathlib import Path
+from typing import List
 import click
-from .. import rsf, xsv, Register
+from .. import rsf, xsv, Register, Entry
 from ..exceptions import RegistersException
 from . import utils
 from .utils import error
@@ -151,6 +152,29 @@ def build_records(path: Path, register: Register):
                 write_resource(path.joinpath(key), record, headers,
                                blob_headers)
 
+                build_record_trail(path.joinpath(key), register.trail(key))
+
+
+def build_record_trail(path: Path, trail: List[Entry]):
+    """
+    Generates the record trail.
+    """
+
+    if path.exists():
+        path.rmdir()
+
+    path.mkdir()
+    path = path.joinpath("entries")
+
+    headers = ["index-entry-number",
+               "entry-number",
+               "entry-timestamp",
+               "key",
+               "item-hash"]
+
+    write_json_resource(path, trail)
+    write_csv_resource(path, trail, headers)
+
 
 def write_resource(path: Path, obj, headers, blob_headers=None):
     """
@@ -168,6 +192,25 @@ def write_resource(path: Path, obj, headers, blob_headers=None):
         writer.writerow(row)
 
     write_json_resource(path, obj)
+
+
+def write_csv_resource(path: Path, obj, headers):
+    """
+    Writes the given object to a file as CSV.
+    """
+
+    with open(f"{path}.csv", "w") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(headers)
+
+        if isinstance(obj, List):
+            for element in obj:
+                row = xsv.serialise_object(element, headers=headers)
+                writer.writerow(row)
+
+        else:
+            row = xsv.serialise_object(obj, headers=headers)
+            writer.writerow(row)
 
 
 def write_json_resource(path: Path, obj):
