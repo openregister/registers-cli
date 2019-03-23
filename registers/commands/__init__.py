@@ -13,3 +13,5 @@ from . import patch, blob, utils
 from .build import build_command
 from .init import init_command
 from .context import context_command
+from .records import records_command
+from .blob import blob_group

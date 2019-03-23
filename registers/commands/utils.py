@@ -14,7 +14,19 @@ def error(message):
 
 
 def note(message):
+    """
+    Sends a message to stdout.
+    """
+
     click.secho(message, fg="yellow", bold=True)
+
+
+def ok(message):
+    """
+    Sends a message to stdout.
+    """
+
+    click.secho(message, fg="green", bold=True)
 
 
 def check_readiness(register: Register):

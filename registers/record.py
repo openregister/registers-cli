@@ -7,7 +7,7 @@ This module implements the Record representation.
 :license: MIT, see LICENSE for more details.
 """
 
-from typing import Optional
+from typing import Optional, Any, Dict
 import json
 from . import Entry, Blob, Value
 from .exceptions import InconsistentRecord
@@ -36,11 +36,20 @@ class Record:
         JSON representation as specified by V1
         """
 
+        return json.dumps({self._entry.key: self.to_dict()},
+                          separators=(',', ':'),
+                          ensure_ascii=False)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Returns the record data as a dictionary.
+        """
+
         data = self._entry.to_dict()
         del data["item-hash"]
         data["item"] = [self._blob.to_dict()]
-        return json.dumps({self._entry.key: data}, separators=(',', ':'),
-                          ensure_ascii=False)
+
+        return data
 
     @property
     def entry(self) -> Entry:
