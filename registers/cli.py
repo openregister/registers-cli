@@ -3,7 +3,7 @@ import json
 import os.path
 import io
 from datetime import datetime
-from .core import EMPTY_ROOT_HASH, __version__, format_timestamp
+from .core import __version__, format_timestamp
 from . import rsf, Register, validator, Datatype
 from .exceptions import RegistersException
 from . import commands
@@ -22,56 +22,15 @@ def error(message):
 @click.version_option(prog_name=click.style("registers", fg='bright_yellow'),
                       version=__version__)
 def cli():
-    pass
+    """
+    registers lets you manage a Register represented as a Register
+    Serialisation Format (RSF).
+    """
 
 
+cli.add_command(commands.init_command)
 cli.add_command(commands.build_command)
-
-
-@cli.command()
-@click.argument("filepath", type=click.Path(exists=False))
-def init(filepath):
-    """Creates an empty register."""
-    assert_root_hash = f"assert-root-hash\t{EMPTY_ROOT_HASH}"
-
-    if os.path.exists(filepath):
-        raise click.UsageError("Please select a file that does not exist.")
-
-    with click.open_file(filepath, "w", "utf-8") as handle:
-        handle.write(assert_root_hash)
-
-    fname = click.style(click.format_filename(filepath), fg='bright_yellow')
-    click.echo(f"Empty register successfully created at {fname}")
-
-
-@cli.command()
-@click.argument("rsf_file", type=click.Path(exists=False))
-@click.option("--format", "output_format", type=click.Choice(["json"]))
-def context(rsf_file, output_format):
-    """Computes the context for the given RSF file."""
-    try:
-        cmds = rsf.read(rsf_file)
-        r = Register(cmds)
-
-        commands.utils.check_readiness(r)
-
-        context = r.context()
-
-        if output_format == "json":
-            click.echo(json.dumps(context))
-
-        else:
-            click.secho("custodian:", fg="yellow", bold=True)
-            click.echo(f"    {context['custodian']}\n")
-            click.secho("last update:", fg="yellow", bold=True)
-            click.echo(f"    {context['last-updated']}\n")
-            click.secho("total records:", fg="yellow", bold=True)
-            click.echo(f"    {context['total-records']}\n")
-            click.secho("total entries:", fg="yellow", bold=True)
-            click.echo(f"    {context['total-entries']}\n")
-
-    except RegistersException as e:
-        error(str(e))
+cli.add_command(commands.context_command)
 
 
 @cli.command()
