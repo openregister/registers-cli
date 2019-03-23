@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+
+"""
+This module implements the Record representation.
+
+:copyright: © 2019 Crown Copyright (Government Digital Service)
+:license: MIT, see LICENSE for more details.
+"""
+
 from typing import Optional
 import json
 from . import Entry, Blob, Value
@@ -8,6 +17,7 @@ class Record:
     """
     Represents a record.
     """
+
     def __init__(self, entry: Entry, blob: Blob):
         if entry.blob_hash != blob.digest():
             raise InconsistentRecord((entry.key, entry.blob_hash))
@@ -34,11 +44,23 @@ class Record:
 
     @property
     def entry(self) -> Entry:
+        """
+        The record entry.
+        """
+
         return self._entry
 
     @property
     def blob(self) -> Blob:
+        """
+        The record blob.
+        """
+
         return self._blob
 
     def get(self, key: str) -> Optional[Value]:
+        """
+        Attempts to get the value for the given key.
+        """
+
         return self._blob.get(key)
