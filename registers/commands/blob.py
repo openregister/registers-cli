@@ -91,7 +91,7 @@ def validate_blob(blob, rsf_file):
 
         msg = f"'{blob}' is valid for the '{register.uid}' register."
 
-        utils.ok(msg)
+        utils.success(msg)
 
     except json.decoder.JSONDecodeError:
         utils.error("The given blob is not well formed JSON.")

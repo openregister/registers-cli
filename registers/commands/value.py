@@ -48,7 +48,7 @@ def validate_command(token, datatype):
 
         msg = f"'{token}' is a valid '{datatype}'."
 
-        utils.ok(msg)
+        utils.success(msg)
 
     except RegistersException as err:
         utils.error(str(err))

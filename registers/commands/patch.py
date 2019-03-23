@@ -52,7 +52,7 @@ def create_command(xsv_file, rsf_file, timestamp, apply_flag):
             number = result['added_commands_number']
             msg = f"Appended {number} changes to {rsf_file}"
 
-            utils.ok(msg)
+            utils.success(msg)
 
         else:
             for obj in result:
@@ -76,7 +76,7 @@ def apply_command(patch_file, rsf_file):
         number = result['added_commands_number']
         msg = f"Appended {number} changes to {rsf_file}"
 
-        utils.ok(msg)
+        utils.success(msg)
 
     except RegistersException as err:
         utils.error(str(err))
