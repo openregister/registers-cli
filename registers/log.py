@@ -1,5 +1,10 @@
+# -*- coding: utf-8 -*-
+
 """
-The log representation and utilities.
+This module implements the Log representation and utilities to work with it.
+
+:copyright: © 2019 Crown Copyright (Government Digital Service)
+:license: MIT, see LICENSE for more details.
 """
 
 from typing import List, Dict, Union, Optional, cast
