@@ -14,6 +14,7 @@ bandit = "~=1.5"
 isort = "~=4.3"
 click = "~=7.0"
 pytest-cov = "*"
+pylint = "*"
 
 [packages]
 requests = "~=2.21"
