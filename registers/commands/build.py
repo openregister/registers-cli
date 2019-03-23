@@ -1,7 +1,17 @@
-import click
+# -*- coding: utf-8 -*-
+
+"""
+This module implements the build command.
+
+
+:copyright: © 2019 Crown Copyright (Government Digital Service)
+:license: MIT, see LICENSE for more details.
+"""
+
 import csv
 import shutil
 from pathlib import Path
+import click
 from .. import rsf, xsv, Register
 from ..exceptions import RegistersException
 from . import utils
@@ -15,6 +25,7 @@ def build_command(rsf_filename):
     Builds the static version of the register. Derives all required files such
     that a static web server conforms to the REST API specification (V1).
     """
+
     try:
         build_path = Path("build")
 
@@ -36,11 +47,15 @@ def build_command(rsf_filename):
 
         click.secho("Build complete.", fg="green", bold=True)
 
-    except RegistersException as e:
-        error(str(e))
+    except RegistersException as err:
+        error(str(err))
 
 
 def build_blobs(path: Path, register: Register):
+    """
+    Generates all blob files.
+    """
+
     if path.exists():
         path.rmdir()
 
@@ -69,6 +84,10 @@ def build_blobs(path: Path, register: Register):
 
 
 def build_entries(path: Path, register: Register):
+    """
+    Generates all entry files.
+    """
+
     if path.exists():
         path.rmdir()
 
@@ -98,6 +117,10 @@ def build_entries(path: Path, register: Register):
 
 
 def write_resource(path: Path, obj, headers):
+    """
+    Generates the pair of files (csv, json) for the given object.
+    """
+
     row = xsv.serialise_object(obj, headers=headers)
 
     with open(f"{path}.csv", "w") as stream:
