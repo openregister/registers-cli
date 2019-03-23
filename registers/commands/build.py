@@ -41,10 +41,11 @@ def build_command(rsf_file):
 
         blobs_path = build_path.joinpath("items")
         entries_path = build_path.joinpath("entries")
-        # records_path = build_path.joinpath("records")
+        records_path = build_path.joinpath("records")
 
         build_blobs(blobs_path, register)
         build_entries(entries_path, register)
+        build_records(records_path, register)
 
         click.secho("Build complete.", fg="green", bold=True)
 
@@ -66,9 +67,8 @@ def build_blobs(path: Path, register: Register):
     headers = [attr.uid for attr in sch.attributes]
     collection = register.log.blobs
 
-    with open(f"{path}/index.json", "w") as stream_collection:
-        utils.serialise_json({repr(k): v for k, v in collection.items()},
-                             stream_collection)
+    write_json_resource(path.joinpath("index"),
+                        {repr(k): v for k, v in collection.items()})
 
     with open(f"{path}/index.csv", "w") as stream_collection:
         writer = csv.writer(stream_collection)
@@ -101,8 +101,7 @@ def build_entries(path: Path, register: Register):
                "item-hash"]
     collection = register.log.entries
 
-    with open(f"{path}/index.json", "w") as stream_collection:
-        utils.serialise_json(collection, stream_collection)
+    write_json_resource(path.joinpath("index"), collection)
 
     with open(f"{path}/index.csv", "w") as stream_collection:
         writer = csv.writer(stream_collection)
@@ -117,17 +116,64 @@ def build_entries(path: Path, register: Register):
                                entry, headers)
 
 
-def write_resource(path: Path, obj, headers):
+def build_records(path: Path, register: Register):
+    """
+    Generates all record files.
+    """
+
+    if path.exists():
+        path.rmdir()
+
+    path.mkdir()
+
+    sch = register.schema()
+    headers = ["index-entry-number",
+               "entry-number",
+               "entry-timestamp",
+               "key"]
+    blob_headers = [attr.uid for attr in sch.attributes]
+    headers.extend(blob_headers)
+
+    collection = register.records()
+
+    write_json_resource(path.joinpath("index"), collection)
+
+    with open(f"{path}/index.csv", "w") as stream_collection:
+        writer = csv.writer(stream_collection)
+        writer.writerow(headers)
+
+        with utils.progressbar(collection.items(),
+                               label='Building records') as bar:
+            for key, record in bar:
+                row = xsv.serialise_object(record, blob_headers)
+                writer.writerow(row)
+
+                write_resource(path.joinpath(key), record, headers,
+                               blob_headers)
+
+
+def write_resource(path: Path, obj, headers, blob_headers=None):
     """
     Generates the pair of files (csv, json) for the given object.
     """
 
-    row = xsv.serialise_object(obj, headers=headers)
+    if blob_headers:
+        row = xsv.serialise_object(obj, headers=blob_headers)
+    else:
+        row = xsv.serialise_object(obj, headers=headers)
 
     with open(f"{path}.csv", "w") as stream:
         writer = csv.writer(stream)
         writer.writerow(headers)
         writer.writerow(row)
 
+    write_json_resource(path, obj)
+
+
+def write_json_resource(path: Path, obj):
+    """
+    Writes the given object to a file as JSON.
+    """
+
     with open(f"{path}.json", "w") as stream:
-        stream.write(repr(obj))
+        utils.serialise_json(obj, stream)
