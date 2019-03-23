@@ -19,29 +19,30 @@ from .utils import error
 
 
 @click.command(name="build")
-@click.argument("rsf_filename", type=click.Path(exists=True))
-def build_command(rsf_filename):
+@click.argument("rsf_file", type=click.Path(exists=True))
+def build_command(rsf_file):
     """
     Builds the static version of the register. Derives all required files such
     that a static web server conforms to the REST API specification (V1).
     """
 
     try:
-        build_path = Path("build")
+        cmds = rsf.read(rsf_file)
+        register = Register(cmds)
+
+        utils.check_readiness(register)
+
+        build_path = Path(f"build/{register.uid}")
 
         if build_path.exists():
             shutil.rmtree(build_path)
 
-        build_path.mkdir()
+        build_path.mkdir(parents=True)
 
         blobs_path = build_path.joinpath("items")
         entries_path = build_path.joinpath("entries")
         # records_path = build_path.joinpath("records")
 
-        cmds = rsf.read(rsf_filename)
-        register = Register(cmds)
-
-        utils.check_readiness(register)
         build_blobs(blobs_path, register)
         build_entries(entries_path, register)
 
