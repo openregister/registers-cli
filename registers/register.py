@@ -82,6 +82,9 @@ class Register:
 
     @property
     def commands(self):
+        """
+        The list of RSF commands.
+        """
         return self._commands
 
     @property

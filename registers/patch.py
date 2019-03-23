@@ -22,7 +22,7 @@ class Patch:
 
         self._schema = schema
 
-        if len(data) == 0:
+        if not data:
             raise ValueError("A patch must receive some data")
 
         if isinstance(data[0], Blob):
