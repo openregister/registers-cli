@@ -43,10 +43,12 @@ def build_command(rsf_file):
         blobs_path = build_path.joinpath("items")
         entries_path = build_path.joinpath("entries")
         records_path = build_path.joinpath("records")
+        commands_path = build_path.joinpath("commands")
 
         build_blobs(blobs_path, register)
         build_entries(entries_path, register)
         build_records(records_path, register)
+        build_commands(commands_path, register)
 
         click.secho("Build complete.", fg="green", bold=True)
 
@@ -135,6 +137,20 @@ def build_record_trail(path: Path, trail: List[Entry]):
     path = path.joinpath("entries")
 
     write_resource(path, trail, headers=Entry.headers())
+
+
+def build_commands(path: Path, register: Register):
+    """
+    Generates all RSF files.
+    """
+
+    if path.exists():
+        path.rmdir()
+
+    path.mkdir()
+
+    with open(f"{path}/0.rsf", "w") as stream:
+        stream.write(rsf.dump(register.commands))
 
 
 def write_resource(path: Path, obj, headers):
