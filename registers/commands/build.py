@@ -11,9 +11,9 @@ This module implements the build command.
 import csv
 import shutil
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 import click
-from .. import rsf, xsv, Register, Entry
+from .. import rsf, xsv, Register, Entry, Record
 from ..exceptions import RegistersException
 from . import utils
 from .utils import error
@@ -68,21 +68,15 @@ def build_blobs(path: Path, register: Register):
     headers = [attr.uid for attr in sch.attributes]
     collection = register.log.blobs
 
-    write_json_resource(path.joinpath("index"),
-                        {repr(k): v for k, v in collection.items()})
+    write_resource(path.joinpath("index"),
+                   {repr(k): v for k, v in collection.items()},
+                   headers)
 
-    with open(f"{path}/index.csv", "w") as stream_collection:
-        writer = csv.writer(stream_collection)
-        writer.writerow(headers)
+    with utils.progressbar(collection.items(),
+                           label='Building blobs') as bar:
 
-        with utils.progressbar(collection.items(),
-                               label='Building blobs') as bar:
-
-            for key, blob in bar:
-                row = xsv.serialise_object(blob, headers=headers)
-                writer.writerow(row)
-
-                write_resource(path.joinpath(repr(key)), blob, headers)
+        for key, blob in bar:
+            write_resource(path.joinpath(repr(key)), blob, headers)
 
 
 def build_entries(path: Path, register: Register):
@@ -95,26 +89,14 @@ def build_entries(path: Path, register: Register):
 
     path.mkdir()
 
-    headers = ["index-entry-number",
-               "entry-number",
-               "entry-timestamp",
-               "key",
-               "item-hash"]
+    headers = Entry.headers()
     collection = register.log.entries
 
-    write_json_resource(path.joinpath("index"), collection)
+    write_resource(path.joinpath("index"), collection, headers)
 
-    with open(f"{path}/index.csv", "w") as stream_collection:
-        writer = csv.writer(stream_collection)
-        writer.writerow(headers)
-
-        with utils.progressbar(collection, label='Building entries') as bar:
-            for entry in bar:
-                row = xsv.serialise_object(entry)
-                writer.writerow(row)
-
-                write_resource(path.joinpath(repr(entry.position)),
-                               entry, headers)
+    with utils.progressbar(collection, label='Building entries') as bar:
+        for entry in bar:
+            write_resource(path.joinpath(repr(entry.position)), entry, headers)
 
 
 def build_records(path: Path, register: Register):
@@ -128,31 +110,17 @@ def build_records(path: Path, register: Register):
     path.mkdir()
 
     sch = register.schema()
-    headers = ["index-entry-number",
-               "entry-number",
-               "entry-timestamp",
-               "key"]
-    blob_headers = [attr.uid for attr in sch.attributes]
-    headers.extend(blob_headers)
-
+    headers = Record.headers(sch)
     collection = register.records()
 
-    write_json_resource(path.joinpath("index"), collection)
+    write_resource(path.joinpath("index"), collection, headers)
 
-    with open(f"{path}/index.csv", "w") as stream_collection:
-        writer = csv.writer(stream_collection)
-        writer.writerow(headers)
+    with utils.progressbar(collection.items(),
+                           label='Building records') as bar:
+        for key, record in bar:
+            write_resource(path.joinpath(key), record, headers)
 
-        with utils.progressbar(collection.items(),
-                               label='Building records') as bar:
-            for key, record in bar:
-                row = xsv.serialise_object(record, blob_headers)
-                writer.writerow(row)
-
-                write_resource(path.joinpath(key), record, headers,
-                               blob_headers)
-
-                build_record_trail(path.joinpath(key), register.trail(key))
+            build_record_trail(path.joinpath(key), register.trail(key))
 
 
 def build_record_trail(path: Path, trail: List[Entry]):
@@ -166,31 +134,15 @@ def build_record_trail(path: Path, trail: List[Entry]):
     path.mkdir()
     path = path.joinpath("entries")
 
-    headers = ["index-entry-number",
-               "entry-number",
-               "entry-timestamp",
-               "key",
-               "item-hash"]
-
-    write_json_resource(path, trail)
-    write_csv_resource(path, trail, headers)
+    write_resource(path, trail, headers=Entry.headers())
 
 
-def write_resource(path: Path, obj, headers, blob_headers=None):
+def write_resource(path: Path, obj, headers):
     """
     Generates the pair of files (csv, json) for the given object.
     """
 
-    if blob_headers:
-        row = xsv.serialise_object(obj, headers=blob_headers)
-    else:
-        row = xsv.serialise_object(obj, headers=headers)
-
-    with open(f"{path}.csv", "w") as stream:
-        writer = csv.writer(stream)
-        writer.writerow(headers)
-        writer.writerow(row)
-
+    write_csv_resource(path, obj, headers)
     write_json_resource(path, obj)
 
 
@@ -205,6 +157,11 @@ def write_csv_resource(path: Path, obj, headers):
 
         if isinstance(obj, List):
             for element in obj:
+                row = xsv.serialise_object(element, headers=headers)
+                writer.writerow(row)
+
+        elif isinstance(obj, Dict):
+            for element in obj.values():
                 row = xsv.serialise_object(element, headers=headers)
                 writer.writerow(row)
 

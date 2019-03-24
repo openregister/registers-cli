@@ -41,6 +41,18 @@ class Entry:
         self._blob_hash = blob_hash
         self._position = position
 
+    @staticmethod
+    def headers():
+        """
+        The entry headers.
+        """
+
+        return ["index-entry-number",
+                "entry-number",
+                "entry-timestamp",
+                "key",
+                "item-hash"]
+
     def __eq__(self, other):
         return self.digest() == other.digest()
 

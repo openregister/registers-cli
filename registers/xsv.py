@@ -63,6 +63,9 @@ csv row you must pass the expected list of headers.")
             raise RegistersException("In order to serialise a record as a \
 csv row you must pass the expected list of headers for the blob.")
 
+        headers = [header for header in headers
+                   if header not in Entry.headers()]
+
         result = serialise_object(obj.entry)[:-1]
         result.extend(serialise_object(obj.blob, headers))
 

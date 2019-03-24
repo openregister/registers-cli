@@ -7,9 +7,11 @@ This module implements the Record representation.
 :license: MIT, see LICENSE for more details.
 """
 
-from typing import Optional, Any, Dict
+from typing import Optional, Any, Dict, List
 import json
-from . import Entry, Blob, Value
+from .entry import Entry
+from .blob import Blob, Value
+from .schema import Schema
 from .exceptions import InconsistentRecord
 
 
@@ -24,6 +26,17 @@ class Record:
 
         self._entry = entry
         self._blob = blob
+
+    @staticmethod
+    def headers(schema: Schema) -> List[str]:
+        """
+        Composes the record headers from the given schema.
+        """
+
+        headers = Entry.headers()
+        headers.extend([attr.uid for attr in schema.attributes])
+
+        return [header for header in headers if header != "item-hash"]
 
     def __eq__(self, other):
         return (self._entry, self._blob) == (other.entry, other.blob)
