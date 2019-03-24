@@ -44,11 +44,13 @@ def build_command(rsf_file):
         entries_path = build_path.joinpath("entries")
         records_path = build_path.joinpath("records")
         commands_path = build_path.joinpath("commands")
+        context_path = build_path.joinpath("register")
 
         build_blobs(blobs_path, register)
         build_entries(entries_path, register)
         build_records(records_path, register)
         build_commands(commands_path, register)
+        build_context(context_path, register)
 
         click.secho("Build complete.", fg="green", bold=True)
 
@@ -151,6 +153,21 @@ def build_commands(path: Path, register: Register):
 
     with open(f"{path}/0.rsf", "w") as stream:
         stream.write(rsf.dump(register.commands))
+
+
+def build_context(path: Path, register: Register):
+    """
+    Generates context files.
+    """
+
+    if path.exists():
+        path.rmdir()
+
+    path.mkdir()
+
+    context = register.context()
+
+    write_json_resource(path, context)
 
 
 def write_resource(path: Path, obj, headers):
