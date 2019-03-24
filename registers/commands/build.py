@@ -102,6 +102,28 @@ def build_entries(path: Path, register: Register):
         for entry in bar:
             write_resource(path.joinpath(repr(entry.position)), entry, headers)
 
+    build_entry_slices(path.joinpath("slices"), register)
+
+
+def build_entry_slices(path: Path, register: Register):
+    """
+    Generates all entry slice files.
+    """
+
+    if path.exists():
+        path.rmdir()
+
+    path.mkdir()
+
+    headers = Entry.headers()
+
+    with utils.progressbar(range(0, register.log.size),
+                           label='Building entry slices') as bar:
+        for idx in bar:
+            write_resource(f"{path}/{idx + 1}",
+                           register.log.entries[idx:],
+                           headers)
+
 
 def build_records(path: Path, register: Register):
     """
