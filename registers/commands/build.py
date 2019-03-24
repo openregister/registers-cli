@@ -13,7 +13,7 @@ import shutil
 from pathlib import Path
 from typing import List, Dict
 import click
-from .. import rsf, xsv, Register, Entry, Record
+from .. import rsf, xsv, log, Register, Entry, Record
 from ..exceptions import RegistersException
 from . import utils
 from .utils import error
@@ -153,6 +153,14 @@ def build_commands(path: Path, register: Register):
 
     with open(f"{path}/0.rsf", "w") as stream:
         stream.write(rsf.dump(register.commands))
+
+    with utils.progressbar(range(1, register.log.size),
+                           label='Building commands') as bar:
+        for idx in bar:
+            commands = log.slice(register.log, idx)
+
+            with open(f"{path}/{idx}.rsf", "w") as stream:
+                stream.write(rsf.dump(commands))
 
 
 def build_context(path: Path, register: Register):

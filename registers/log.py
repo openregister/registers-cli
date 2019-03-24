@@ -147,3 +147,17 @@ def collect(commands: List[Command],
         metadata.insert(blob)
 
     return {"data": data, "metadata": metadata}
+
+
+def slice(log: Log, start_position: int) -> List[Command]:
+    """
+    Slices the log as a list of commands.
+    """
+
+    commands = []
+
+    for entry in log.entries[start_position:]:
+        commands.append(Command(Action.AddItem, log.blobs[entry.blob_hash]))
+        commands.append(Command(Action.AppendEntry, entry))
+
+    return commands
