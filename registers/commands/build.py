@@ -10,6 +10,7 @@ This module implements the build command.
 
 import csv
 import shutil
+from zipfile import ZipFile
 from pathlib import Path
 from typing import List, Dict
 import click
@@ -51,6 +52,7 @@ def build_command(rsf_file):
         build_records(records_path, register)
         build_commands(commands_path, register)
         build_context(context_path, register)
+        build_archive(build_path, register)
 
         click.secho("Build complete.", fg="green", bold=True)
 
@@ -120,7 +122,7 @@ def build_entry_slices(path: Path, register: Register):
     with utils.progressbar(range(0, register.log.size),
                            label='Building entry slices') as bar:
         for idx in bar:
-            write_resource(f"{path}/{idx + 1}",
+            write_resource(path.joinpath(str(idx + 1)),
                            register.log.entries[idx:],
                            headers)
 
@@ -190,14 +192,25 @@ def build_context(path: Path, register: Register):
     Generates context files.
     """
 
-    if path.exists():
-        path.rmdir()
-
-    path.mkdir()
-
     context = register.context()
 
     write_json_resource(path, context)
+
+
+def build_archive(path: Path, register: Register):
+    """
+    Generates archive (zip) file.
+    """
+
+    with ZipFile(f"{path}/archive.zip", "w") as archive:
+        archive.write(f"build/{register.uid}/items/index.json",
+                      f"{register.uid}/item/index.json")
+        archive.write(f"build/{register.uid}/entries/index.json",
+                      f"{register.uid}/entry/index.json")
+        archive.write(f"build/{register.uid}/records/index.json",
+                      f"{register.uid}/record/index.json")
+        archive.write(f"build/{register.uid}/register.json",
+                      f"{register.uid}/register.json")
 
 
 def write_resource(path: Path, obj, headers):
