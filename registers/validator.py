@@ -8,6 +8,7 @@ This module implements the validation functions for values.
 """
 
 import re
+from urllib.parse import urlparse
 from typing import Dict, Union, List
 from .schema import Schema, Cardinality, Datatype, Attribute
 from .exceptions import (MissingPrimaryKey, CardinalityMismatch,
@@ -77,7 +78,6 @@ HASH_RE = re.compile(r'^sha-256:[a-f\d]{64}$')
 INTEGER_RE = re.compile(r'^(0|\-?[1-9]\d*)$')
 PERIOD_RE = re.compile(r'^P(\d+Y)?(\d+M)?(\d+D)?(T(\d+H)?(\d+M)?(\d+S)?)?$')
 TIMESTAMP_RE = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
-URL_RE = re.compile(r'^https?://')
 
 
 def validate_value_datatype(value: str, datatype: Datatype) -> bool:
@@ -116,8 +116,17 @@ def validate_value_datatype(value: str, datatype: Datatype) -> bool:
     if datatype is Datatype.Timestamp and TIMESTAMP_RE.match(value) is None:
         raise InvalidTimestampValue(value)
 
-    if datatype is Datatype.Url and URL_RE.match(value) is None:
-        raise InvalidUrlValue(value)
+    if datatype is Datatype.Url:
+        try:
+            result = urlparse(value)
+            is_known_scheme = result.scheme in ["http", "https"]
+            has_hostname = result.hostname and result.hostname.find(".") != -1
+
+            if not (is_known_scheme and has_hostname):
+                raise InvalidUrlValue(value)
+
+        except ValueError:
+            raise InvalidUrlValue(value)
 
     # Datatype.String and Datatype.Text are assumed to be valid.
     return True

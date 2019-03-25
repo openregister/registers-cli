@@ -298,6 +298,9 @@ def test_invalid_url_value():
     with pytest.raises(InvalidUrlValue):
         validate_value_datatype("abc", Datatype.Url)
 
+    with pytest.raises(InvalidUrlValue):
+        validate_value_datatype("http://", Datatype.Url)
+
 
 def test_hash_value():
     assert validate_value_datatype("sha-256:b3ca21b3b3a795ab9cd1d10f3d447947328406984f8a461b43d9b74b58cccfe8", Datatype.Hash) # NOQA
