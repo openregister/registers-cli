@@ -205,6 +205,7 @@ def test_integer_value():
     assert validate_value_datatype("0", Datatype.Integer)
     assert validate_value_datatype("1", Datatype.Integer)
     assert validate_value_datatype("123", Datatype.Integer)
+    assert validate_value_datatype("-1", Datatype.Integer)
 
 
 def test_invalid_integer_value():
