@@ -26,6 +26,42 @@ def build_command(rsf_file):
     """
     Builds the static version of the register. Derives all required files such
     that a static web server conforms to the REST API specification (V1).
+
+    The expected result for a register named ``web-colours``:
+
+        \b
+        build
+        └── web-colours
+            ├── archive.zip
+            ├── commands
+            │  ├── 0.rsf
+            │  ├── 1.rsf
+            .  .
+            .  .
+            ├── entries
+            │  ├── 1.rsf
+            │  ├── 2.rsf
+            .  .
+            .  .
+            ├── items
+            │  ├── sha-256:cc524b28...b22dc1f27ed35da34564.csv
+            │  ├── sha-256:cc524b28...b22dc1f27ed35da34564.json
+            .  .
+            .  .
+            ├── records
+            .  .
+            .  .
+            │  ├── purple.csv
+            │  ├── purple.json
+            │  ├── purple
+            │  │  ├── entries.csv
+            │  │  └── entries.json
+            │  ├── index.csv
+            │  └── index.json
+            └── register.json
+
+    Note that the name of the file RSF_FILE is not used for any part of the
+    build process.
     """
 
     try:
