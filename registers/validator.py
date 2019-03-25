@@ -70,7 +70,7 @@ def validate_value(value: str, attr: Attribute):
     validate_value_datatype(value, attr.datatype)
 
 
-CURIE_RE = re.compile(r'^\w[\w\d-]*:[\w\d_/.%-]*$')
+CURIE_RE = re.compile(r'^[a-z][a-z\d-]*:[\w\d_/.%-]*$')
 DATETIME_RE = re.compile(r'^\d{4}(-\d{2}(-\d{2}(T\d{2}(:\d{2}(:\d{2})?)?Z)?)?)?$') # NOQA
 NAME_RE = re.compile(r'^\w[\w\d-]*$')
 HASH_RE = re.compile(r'^sha-256:[a-f\d]{64}$')
