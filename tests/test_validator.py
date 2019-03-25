@@ -261,6 +261,11 @@ def test_period_value():
     assert validate_value_datatype("P1Y2M3DT4M6S", Datatype.Period)
 
 
+def test_period_datetime_duration():
+    assert validate_value_datatype("2019-03-25/P1Y", Datatype.Period)
+    assert validate_value_datatype("P1Y3D/2020", Datatype.Period)
+
+
 def test_invalid_period_value():
     with pytest.raises(InvalidPeriodValue):
         validate_value_datatype("abc", Datatype.Period)
@@ -273,6 +278,15 @@ def test_invalid_period_value():
 
     with pytest.raises(InvalidPeriodValue):
         validate_value_datatype("P2YT", Datatype.Period)
+
+    with pytest.raises(InvalidPeriodValue):
+        validate_value_datatype("P2Y/", Datatype.Period)
+
+    with pytest.raises(InvalidPeriodValue):
+        validate_value_datatype("/", Datatype.Period)
+
+    with pytest.raises(InvalidPeriodValue):
+        validate_value_datatype("/2010-11-12T10", Datatype.Period)
 
 
 def test_url_value():

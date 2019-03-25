@@ -80,7 +80,7 @@ TIMESTAMP_RE = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
 URL_RE = re.compile(r'^https?://')
 
 
-def validate_value_datatype(value, datatype: Datatype) -> bool:
+def validate_value_datatype(value: str, datatype: Datatype) -> bool:
     """
     Validates a value against the given datatype.
 
@@ -102,10 +102,16 @@ def validate_value_datatype(value, datatype: Datatype) -> bool:
     if datatype is Datatype.Integer and INTEGER_RE.match(value) is None:
         raise InvalidIntegerValue(value)
 
-    if (datatype is Datatype.Period and
-            (PERIOD_RE.match(value) is None or value == "P" or
-             value.endswith("T"))):
-        raise InvalidPeriodValue(value)
+    if datatype is Datatype.Period:
+        if value.find("/") != -1:
+            start, end = value.split("/")
+
+            if not (_is_valid_period_part(start)
+                    and _is_valid_period_part(end)):
+                raise InvalidPeriodValue(value)
+
+        elif not _is_valid_duration(value):
+            raise InvalidPeriodValue(value)
 
     if datatype is Datatype.Timestamp and TIMESTAMP_RE.match(value) is None:
         raise InvalidTimestampValue(value)
@@ -115,3 +121,13 @@ def validate_value_datatype(value, datatype: Datatype) -> bool:
 
     # Datatype.String and Datatype.Text are assumed to be valid.
     return True
+
+
+def _is_valid_duration(value):
+    return (PERIOD_RE.match(value) is not None
+            and value != "P"
+            and not value.endswith("T"))
+
+
+def _is_valid_period_part(value):
+    return DATETIME_RE.match(value) or _is_valid_duration(value)
