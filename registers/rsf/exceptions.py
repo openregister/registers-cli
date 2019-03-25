@@ -1,9 +1,16 @@
+# -*- coding: utf-8 -*-
+
+"""
+This module implements the RSF exceptions.
+
+
+:copyright: © 2019 Crown Copyright (Government Digital Service)
+:license: MIT, see LICENSE for more details.
+"""
+
+
 class UnknownCommand(Exception):
     """An unknown command was found."""
-
-
-class UnknownScope(Exception):
-    """An unknown scope was found."""
 
 
 class UnexpectedEntry(Exception):

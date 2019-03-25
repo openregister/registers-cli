@@ -1,3 +1,13 @@
+# -*- coding: utf-8 -*-
+
+"""
+This module implements the Entry representation.
+
+:copyright: © 2019 Crown Copyright (Government Digital Service)
+:license: MIT, see LICENSE for more details.
+"""
+
+
 from typing import Optional
 from enum import Enum
 from hashlib import sha256
@@ -7,6 +17,10 @@ from .exceptions import MissingEntryKey
 
 
 class Scope(Enum):
+    """
+    Represents the entry scope.
+    """
+
     User = 'user'
     System = 'system'
 
@@ -14,15 +28,8 @@ class Scope(Enum):
 class Entry:
     """
     Represent an entry in the `Log` of changes.
-
-
-    TODO:
-    * entry validation
-    * validate key
-    * validate timestamp
-    * validate blob exists
-    * validate previous entry for key has a different blob -- (out of scope)
     """
+
     def __init__(self, key: str, scope: Scope, timestamp: str,
                  blob_hash: Hash, position: int = None):
         if not isinstance(key, str):
@@ -33,6 +40,18 @@ class Entry:
         self._timestamp = timestamp
         self._blob_hash = blob_hash
         self._position = position
+
+    @staticmethod
+    def headers():
+        """
+        The entry headers.
+        """
+
+        return ["index-entry-number",
+                "entry-number",
+                "entry-timestamp",
+                "key",
+                "item-hash"]
 
     def __eq__(self, other):
         return self.digest() == other.digest()
@@ -52,13 +71,17 @@ class Entry:
 
     def to_json(self):
         """
-        The entry json representation
+        The entry json representation.
         """
 
         return json.dumps([self.to_dict()], separators=(',', ':'),
                           ensure_ascii=False)
 
     def to_dict(self):
+        """
+        The entry dictionary representation.
+        """
+
         return {
             "index-entry-number": str(self._position),
             "entry-number": str(self._position),
@@ -68,24 +91,48 @@ class Entry:
         }
 
     def set_position(self, number: int):
+        """
+        Sets the entry position.
+        """
+
         self._position = number
 
     @property
     def position(self) -> Optional[int]:
+        """
+        The entry position.
+        """
+
         return self._position
 
     @property
     def key(self) -> str:
+        """
+        The entry key.
+        """
+
         return self._key
 
     @property
     def scope(self) -> Scope:
+        """
+        The entry scope.
+        """
+
         return self._scope
 
     @property
     def timestamp(self) -> str:
+        """
+        The entry timestamp.
+        """
+
         return self._timestamp
 
     @property
     def blob_hash(self) -> Hash:
+        """
+        The entry blob hash.
+        """
+
         return self._blob_hash

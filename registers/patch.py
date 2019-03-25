@@ -1,6 +1,14 @@
+# -*- coding: utf-8 -*-
+
 """
-The Patch representation and utilities to work with it.
+This module implements the Patch representation and utility functions to
+operate on it.
+
+
+:copyright: © 2019 Crown Copyright (Government Digital Service)
+:license: MIT, see LICENSE for more details.
 """
+
 from typing import List, cast, Union
 from datetime import datetime
 from .entry import Entry, Scope
@@ -12,7 +20,28 @@ from .core import format_timestamp
 
 class Patch:
     """
-    Represents a patch of data changes.
+    Represents a patch of data changes that can be applied to a Register.
+
+    You can make a patch from a list of blobs:
+
+    >>> from registers import rsf, schema, Schema, Blob, Entry, Hash
+    >>> sch = Schema("foo", [schema.string("foo"), schema.string("bar")])
+    >>> blobs = [Blob({"foo": "abc", "bar": "xyz"})]
+    >>> timestamp = "2019-01-01T10:11:12Z"
+    >>> patch = Patch(sch, blobs, timestamp)
+    >>> patch.timestamp
+    '2019-01-01T10:11:12Z'
+
+    Or from a list of RSF commands:
+
+    >>> cmds = [
+    ...   rsf.Command(rsf.Action.AddItem, Blob({"foo": "abc", "bar": "xyz"})),
+    ...   rsf.Command(rsf.Action.AppendEntry, Entry("foo", Scope.User,
+    ... timestamp, Hash("sha-256",
+    ... "5dd4fe3b0de91882dae86b223ca531b5c8f2335d9ee3fd0ab18dfdc2871d0c61")))]
+    >>> patch = Patch(sch, blobs, timestamp)
+    >>> patch.timestamp
+    '2019-01-01T10:11:12Z'
     """
 
     def __init__(self,
@@ -22,7 +51,7 @@ class Patch:
 
         self._schema = schema
 
-        if len(data) == 0:
+        if not data:
             raise ValueError("A patch must receive some data")
 
         if isinstance(data[0], Blob):
@@ -39,30 +68,48 @@ class Patch:
 
     @property
     def commands(self):
+        """
+        The list of commands that constitute the patch.
+        """
+
         return self._commands
 
     @property
     def schema(self):
+        """
+        The schema the patch data is checked against.
+        """
+
         return self._schema
 
     @property
     def timestamp(self):
+        """
+        The timestamp used to generate all commands belonging to the patch.
+        """
+
         return self._timestamp
 
     def add(self, blob: Blob):
+        """
+        Adds the given data to the patch.
+        """
+
         self._commands.extend(collect(self._schema.primary_key,
                                       [blob],
                                       self._timestamp))
 
 
-def collect(pk: str, blobs: List[Blob], timestamp: str) -> List[Command]:
+def collect(primary_key: str, blobs: List[Blob],
+            timestamp: str) -> List[Command]:
     """
     Collects commands from a list of blobs.
     """
+
     commands = []
 
     for blob in blobs:
-        key = cast(str, blob.get(pk))
+        key = cast(str, blob.get(primary_key))
         entry = Entry(key, Scope.User, timestamp, blob.digest())
         commands.append(Command(Action.AddItem, blob))
         commands.append(Command(Action.AppendEntry, entry))

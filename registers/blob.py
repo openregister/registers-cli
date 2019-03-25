@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+
+"""
+This module implements the Blob representation.
+
+:copyright: © 2019 Crown Copyright (Government Digital Service)
+:license: MIT, see LICENSE for more details.
+"""
+
 from typing import Dict, Union, List, Optional
 from hashlib import sha256
 import json
@@ -25,12 +34,7 @@ class Blob:
         return self.to_json()
 
     def __iter__(self):
-        self.__pairs = iter(sorted(self._data.items()))
-
-        return self
-
-    def __next__(self):
-        return next(self.__pairs)
+        return iter(sorted(self._data.items()))
 
     def digest(self) -> Hash:
         """The digest of the Blob according to V1"""
@@ -49,6 +53,10 @@ class Blob:
                           ensure_ascii=False)
 
     def to_dict(self) -> Dict[str, Union[str, List[str]]]:
+        """
+        Returns the blob data as a dictionary.
+        """
+
         return {k: v for k, v in sorted(self._data.items())}
 
     def get(self, key: str) -> Optional[Value]:

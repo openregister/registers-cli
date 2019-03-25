@@ -2,6 +2,10 @@ test:
 	pipenv run pytest --doctest-modules
 .PHONY: test
 
+coverage:
+	pipenv run pytest --doctest-modules --cov-report=term --cov=registers
+.PHONY: coverage
+
 check:
 	pipenv run mypy -p registers --warn-redundant-casts
 .PHONY: check
@@ -12,4 +16,10 @@ security_check:
 
 lint:
 	pipenv run flake8
+.PHONY: lint
+
+# Pylint is more agressive than flake8. Good for development but not so much
+# for CI.
+pylint:
+	pipenv run pylint registers
 .PHONY: lint

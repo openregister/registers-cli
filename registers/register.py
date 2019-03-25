@@ -1,5 +1,11 @@
+# -*- coding: utf-8 -*-
+
 """
-The Register representation and utilities to work with it.
+This module implements the Register representation and helper functions.
+
+
+:copyright: © 2019 Crown Copyright (Government Digital Service)
+:license: MIT, see LICENSE for more details.
 """
 
 from typing import List, Dict, Optional
@@ -82,6 +88,9 @@ class Register:
 
     @property
     def commands(self):
+        """
+        The list of RSF commands.
+        """
         return self._commands
 
     @property

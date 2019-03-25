@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+
+"""
+This module implements the validation functions for values.
+
+:copyright: © 2019 Crown Copyright (Government Digital Service)
+:license: MIT, see LICENSE for more details.
+"""
+
 import re
 from typing import Dict, Union, List
 from .schema import Schema, Cardinality, Datatype, Attribute
@@ -14,6 +23,12 @@ from .exceptions import (MissingPrimaryKey, CardinalityMismatch,
 
 
 def validate(data: Dict[str, Union[str, List[str]]], schema: Schema) -> bool:
+    """
+    Validates a blob-like dictionary against the given schema.
+
+    If the given data is invalid it raises a ``ValidationError`` exception.
+    """
+
     if data.get(schema.primary_key) is None:
         raise MissingPrimaryKey(schema.primary_key, data)
 
@@ -24,14 +39,14 @@ def validate(data: Dict[str, Union[str, List[str]]], schema: Schema) -> bool:
             raise UnknownAttribute(key, value)
 
         if value is None:
-            return True
+            continue
 
         if isinstance(value, List):
             if attr.cardinality is not Cardinality.Many:
                 raise CardinalityMismatch(key, attr.cardinality.value, value)
 
-            for el in value:
-                validate_value(el, attr)
+            for token in value:
+                validate_value(token, attr)
 
         else:
             if attr.cardinality is not Cardinality.One:
@@ -43,6 +58,12 @@ def validate(data: Dict[str, Union[str, List[str]]], schema: Schema) -> bool:
 
 
 def validate_value(value: str, attr: Attribute):
+    """
+    Validates a value against the given attribute.
+
+    If the given value is invalid it raises a ``ValidationError`` exception.
+    """
+
     if not isinstance(value, str):
         raise RepresentationError(attr.uid, value, attr.datatype.value)
 
@@ -60,6 +81,12 @@ URL_RE = re.compile(r'^https?://')
 
 
 def validate_value_datatype(value, datatype: Datatype) -> bool:
+    """
+    Validates a value against the given datatype.
+
+    If the given value is invalid it raises a ``InvalidValue`` exception.
+    """
+
     if datatype is Datatype.Curie and CURIE_RE.match(value) is None:
         raise InvalidCurieValue(value)
 

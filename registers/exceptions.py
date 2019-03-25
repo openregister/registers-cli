@@ -80,6 +80,11 @@ class CardinalityMismatch(ValidationError):
 
 
 class RepresentationError(ValidationError):
+    """
+    Found a value that does not conform the string representation for the
+    expected datatype.
+    """
+
     def __init__(self, attr, value, datatype):
         message = f"The value for '{attr}' has a value '{value}' that is not a \
 string representation for '{datatype}'."
@@ -88,6 +93,10 @@ string representation for '{datatype}'."
 
 
 class InvalidValue(ValidationError):
+    """
+    Found an invalid value.
+    """
+
     def __init__(self, datatype, value):
         self._datatype = value
         self._value = value
@@ -96,54 +105,92 @@ class InvalidValue(ValidationError):
 
         super().__init__(message)
 
-        @property
-        def datatype(self):
-            self._datatype
+    @property
+    def datatype(self):
+        """The expected datatype"""
 
-        @property
-        def value(self):
-            self._value
+        return self._datatype
+
+    @property
+    def value(self):
+        """The invalid value."""
+
+        return self._value
 
 
 class InvalidCurieValue(InvalidValue):
+    """
+    Found an invalid curie.
+    """
+
     def __init__(self, value):
         super().__init__("curie", value)
 
 
 class InvalidDatetimeValue(InvalidValue):
+    """
+    Found an invalid datetime.
+    """
+
     def __init__(self, value):
         super().__init__("datetime", value)
 
 
 class InvalidNameValue(InvalidValue):
+    """
+    Found an invalid name.
+    """
+
     def __init__(self, value):
         super().__init__("name", value)
 
 
 class InvalidHashValue(InvalidValue):
+    """
+    Found an invalid hash.
+    """
+
     def __init__(self, value):
         super().__init__("hash", value)
 
 
 class InvalidIntegerValue(InvalidValue):
+    """
+    Found an invalid integer.
+    """
+
     def __init__(self, value):
         super().__init__("integer", value)
 
 
 class InvalidPeriodValue(InvalidValue):
+    """
+    Found an invalid period.
+    """
+
     def __init__(self, value):
         super().__init__("period", value)
 
 
 class InvalidTimestampValue(InvalidValue):
+    """
+    Found an invalid timestamp.
+    """
+
     def __init__(self, value):
         super().__init__("timestamp", value)
 
 
 class InvalidUrlValue(InvalidValue):
+    """
+    Found an invalid url.
+    """
+
     def __init__(self, value):
         super().__init__("url", value)
 
 
 class CommandError(RegistersException):
-    pass
+    """
+    Found a command error.
+    """

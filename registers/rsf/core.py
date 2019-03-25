@@ -1,5 +1,11 @@
+# -*- coding: utf-8 -*-
+
 """
-RSF core types
+This module implements the RSF core represetations: Command and Action.
+
+
+:copyright: © 2019 Crown Copyright (Government Digital Service)
+:license: MIT, see LICENSE for more details.
 """
 
 from typing import Union
@@ -13,6 +19,10 @@ Value = Union[Blob, Entry, Hash]
 
 
 class Action(Enum):
+    """
+    Represents the RSF actions.
+    """
+
     AddItem = 'add-item'
     AppendEntry = 'append-entry'
     AssertRootHash = 'assert-root-hash'
@@ -53,8 +63,16 @@ class Command:
 
     @property
     def action(self) -> Action:
+        """
+        The command action.
+        """
+
         return self._action
 
     @property
     def value(self) -> Value:
+        """
+        The command value.
+        """
+
         return self._value
