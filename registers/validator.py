@@ -9,7 +9,7 @@ This module implements the validation functions for values.
 
 import re
 from urllib.parse import urlparse
-from typing import Dict, Union, List
+from typing import Dict, Union, List, cast
 from .schema import Schema, Cardinality, Datatype, Attribute
 from .exceptions import (MissingPrimaryKey, CardinalityMismatch,
                          RepresentationError, UnknownAttribute,
@@ -73,7 +73,9 @@ def validate_value(value: str, attr: Attribute):
 
 CURIE_RE = re.compile(r'^[a-z][a-z\d-]*:[\w\d_/.%-]*$')
 DATETIME_RE = re.compile(r'^\d{4}(-\d{2}(-\d{2}(T\d{2}(:\d{2}(:\d{2})?)?Z)?)?)?$') # NOQA
-NAME_RE = re.compile(r'^\w[\w\d-]*$')
+NAME_RE = re.compile(r'^[A-Za-z][A-Za-z\d-]*$')
+KEY_RE = re.compile(r'^[A-Za-z\d][A-Za-z\d_./-]*$')
+KEY_CONSECUTIVE_RE = re.compile(r'.*[_./-]{2}.*')
 HASH_RE = re.compile(r'^sha-256:[a-f\d]{64}$')
 INTEGER_RE = re.compile(r'^(0|\-?[1-9]\d*)$')
 PERIOD_RE = re.compile(r'^P(\d+Y)?(\d+M)?(\d+D)?(T(\d+H)?(\d+M)?(\d+S)?)?$')
@@ -130,6 +132,14 @@ def validate_value_datatype(value: str, datatype: Datatype) -> bool:
 
     # Datatype.String and Datatype.Text are assumed to be valid.
     return True
+
+
+def validate_key(key: str) -> bool:
+    """
+    Validates a key value.
+    """
+
+    return cast(bool, KEY_RE.match(key) and not KEY_CONSECUTIVE_RE.match(key))
 
 
 def _is_valid_duration(value):

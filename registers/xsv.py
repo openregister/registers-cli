@@ -18,8 +18,8 @@ from .blob import Blob, Value
 from .entry import Entry
 from .record import Record
 from .schema import Cardinality, Schema
-from .exceptions import RegistersException, UnknownAttribute
-from .validator import validate
+from .exceptions import RegistersException, UnknownAttribute, InvalidKey
+from .validator import validate, validate_key
 
 
 Row = NewType("Row", List[str])
@@ -240,6 +240,9 @@ def coerce(data: Dict[str, str], schema: Schema) -> Blob:
 
         if attr is None:
             raise UnknownAttribute(key, value)
+
+        if key == schema.primary_key and not validate_key(value):
+            raise InvalidKey(value)
 
         clean_data[key] = cast(Value, deserialise_value(value,
                                                         attr.cardinality))

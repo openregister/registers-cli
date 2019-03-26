@@ -1,5 +1,6 @@
 import pytest
 from registers import rsf, xsv, schema, Schema, Blob, Register
+from registers.exceptions import InvalidKey
 from io import StringIO
 
 
@@ -57,3 +58,15 @@ def test_deserialise_isa_tsv_patch_item(isa_tsv_patch):
     item = isa_tsv_patch[0]
 
     assert isinstance(item, Blob)
+
+
+def test_coerce_wrong_key():
+    sch = Schema("foo", [
+        schema.string("foo"),
+        schema.integer("x"),
+        schema.integer("y")
+    ])
+    data = {"foo": "_1", "x": "1", "y": "1"}
+
+    with pytest.raises(InvalidKey):
+        xsv.coerce(data, sch)

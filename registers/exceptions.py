@@ -118,6 +118,17 @@ class InvalidValue(ValidationError):
         return self._value
 
 
+class InvalidKey(ValidationError):
+    """
+    Found an invalid key.
+    """
+
+    def __init__(self, value):
+        message = f"'{value}' is not a valid key."
+
+        super().__init__(message)
+
+
 class InvalidCurieValue(InvalidValue):
     """
     Found an invalid curie.

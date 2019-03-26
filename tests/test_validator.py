@@ -1,5 +1,6 @@
 import pytest
-from registers.validator import validate, validate_value_datatype
+from registers.validator import (validate, validate_value_datatype,
+                                 validate_key)
 from registers.schema import Schema, Cardinality, Datatype, Attribute
 from registers.exceptions import (MissingPrimaryKey, CardinalityMismatch,
                                   RepresentationError, UnknownAttribute,
@@ -321,3 +322,23 @@ def test_name_value():
 def test_invalid_name_value():
     with pytest.raises(InvalidNameValue):
         validate_value_datatype("foo/123", Datatype.Name)
+
+
+def test_key_value():
+    assert validate_key("1")
+    assert validate_key("GB")
+    assert validate_key("01")
+    assert validate_key("10.5")
+    assert validate_key("ADR")
+    assert validate_key("CA-ZX")
+    assert validate_key("an_id")
+    assert validate_key("10.2/3")
+
+
+def test_invalid_key_value():
+    assert not validate_key("_1")
+    assert not validate_key(".34")
+    assert not validate_key("A..B")
+    assert not validate_key("ALPHA--")
+    assert not validate_key("C__34")
+    assert not validate_key("C_/34")
