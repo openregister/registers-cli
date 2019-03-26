@@ -130,7 +130,7 @@ def validate_curie(value: str) -> bool:
     Validates a curie value.
     """
 
-    return CURIE_RE.match(value)
+    return cast(bool, CURIE_RE.match(value))
 
 
 def validate_datetime(value: str) -> bool:
@@ -138,7 +138,7 @@ def validate_datetime(value: str) -> bool:
     Validates a datetime value.
     """
 
-    return DATETIME_RE.match(value)
+    return cast(bool, DATETIME_RE.match(value))
 
 
 def validate_name(value: str) -> bool:
@@ -146,7 +146,7 @@ def validate_name(value: str) -> bool:
     Validates a name value.
     """
 
-    return NAME_RE.match(value)
+    return cast(bool, NAME_RE.match(value))
 
 
 def validate_hash(value: str) -> bool:
@@ -154,7 +154,7 @@ def validate_hash(value: str) -> bool:
     Validates a hash value.
     """
 
-    return HASH_RE.match(value)
+    return cast(bool, HASH_RE.match(value))
 
 
 def validate_integer(value: str) -> bool:
@@ -162,7 +162,7 @@ def validate_integer(value: str) -> bool:
     Validates an integer value.
     """
 
-    return INTEGER_RE.match(value)
+    return cast(bool, INTEGER_RE.match(value))
 
 
 def validate_period(value: str) -> bool:
@@ -183,7 +183,7 @@ def validate_timestamp(value: str) -> bool:
     Validates a timestamp value.
     """
 
-    return TIMESTAMP_RE.match(value)
+    return cast(bool, TIMESTAMP_RE.match(value))
 
 
 def validate_url(value: str) -> bool:
@@ -196,7 +196,7 @@ def validate_url(value: str) -> bool:
         is_known_scheme = result.scheme in ["http", "https"]
         has_hostname = result.hostname and result.hostname.find(".") != -1
 
-        return is_known_scheme and has_hostname
+        return cast(bool, is_known_scheme and has_hostname)
 
     except ValueError:
         return False
