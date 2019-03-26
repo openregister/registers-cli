@@ -9,7 +9,7 @@ This module implements the value command group.
 """
 
 import click
-from .. import validator, Datatype
+from .. import validator, schema, Datatype
 from ..exceptions import RegistersException
 from . import utils
 
@@ -27,16 +27,7 @@ def value_group():
 @value_group.command(name="validate")
 @click.argument("token")
 @click.option("--type", "datatype", required=True,
-              type=click.Choice(["curie",
-                                 "datetime",
-                                 "name",
-                                 "hash",
-                                 "integer",
-                                 "period",
-                                 "string",
-                                 "text",
-                                 "timestamp",
-                                 "url"]),
+              type=click.Choice(schema.DATATYPES),
               help="The datatype TOKEN is expected to conform to.")
 def validate_command(token, datatype):
     """

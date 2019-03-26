@@ -17,6 +17,18 @@ from .exceptions import AttributeAlreadyExists, MissingAttributeIdentifier
 from .blob import Blob
 
 
+DATATYPES = ["curie",
+             "datetime",
+             "name",
+             "hash",
+             "integer",
+             "period",
+             "string",
+             "text",
+             "timestamp",
+             "url"]
+
+
 class Cardinality(Enum):
     """
     The attribute cardinality representation.
@@ -103,6 +115,13 @@ class Attribute:
 
         return json.dumps(dict(self), separators=(',', ':'),
                           ensure_ascii=False)
+
+    def to_blob(self):
+        """
+        The attribute blob representation.
+        """
+
+        return Blob(self.to_dict())
 
     @property
     def uid(self) -> str:

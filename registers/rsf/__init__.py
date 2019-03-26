@@ -15,9 +15,9 @@ progress can be found here:
 
 
 from typing import List
-from .core import (Action, Command, # NOQA
-                   add_item, assert_root_hash, append_entry)
-from .parser import parse, load # NOQA
+from .core import (Action, Command,  # NOQA
+                   assert_root_hash, add_item, append_entry)
+from .parser import parse, load  # NOQA
 
 
 def read(filepath: str) -> List[Command]:
