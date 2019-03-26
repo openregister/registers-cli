@@ -89,46 +89,29 @@ def validate_value_datatype(value: str, datatype: Datatype) -> bool:
     If the given value is invalid it raises a ``InvalidValue`` exception.
     """
 
-    if datatype is Datatype.Curie and CURIE_RE.match(value) is None:
+    if datatype is Datatype.Curie and not validate_curie(value):
         raise InvalidCurieValue(value)
 
-    if datatype is Datatype.Datetime and DATETIME_RE.match(value) is None:
+    if datatype is Datatype.Datetime and not validate_datetime(value):
         raise InvalidDatetimeValue(value)
 
-    if datatype is Datatype.Name and NAME_RE.match(value) is None:
+    if datatype is Datatype.Name and not validate_name(value):
         raise InvalidNameValue(value)
 
-    if datatype is Datatype.Hash and HASH_RE.match(value) is None:
+    if datatype is Datatype.Hash and not validate_hash(value):
         raise InvalidHashValue(value)
 
-    if datatype is Datatype.Integer and INTEGER_RE.match(value) is None:
+    if datatype is Datatype.Integer and not validate_integer(value):
         raise InvalidIntegerValue(value)
 
-    if datatype is Datatype.Period:
-        if value.find("/") != -1:
-            start, end = value.split("/")
+    if datatype is Datatype.Period and not validate_period(value):
+        raise InvalidPeriodValue(value)
 
-            if not (_is_valid_period_part(start)
-                    and _is_valid_period_part(end)):
-                raise InvalidPeriodValue(value)
-
-        elif not _is_valid_duration(value):
-            raise InvalidPeriodValue(value)
-
-    if datatype is Datatype.Timestamp and TIMESTAMP_RE.match(value) is None:
+    if datatype is Datatype.Timestamp and not validate_timestamp(value):
         raise InvalidTimestampValue(value)
 
-    if datatype is Datatype.Url:
-        try:
-            result = urlparse(value)
-            is_known_scheme = result.scheme in ["http", "https"]
-            has_hostname = result.hostname and result.hostname.find(".") != -1
-
-            if not (is_known_scheme and has_hostname):
-                raise InvalidUrlValue(value)
-
-        except ValueError:
-            raise InvalidUrlValue(value)
+    if datatype is Datatype.Url and not validate_url(value):
+        raise InvalidUrlValue(value)
 
     # Datatype.String and Datatype.Text are assumed to be valid.
     return True
@@ -140,6 +123,99 @@ def validate_key(key: str) -> bool:
     """
 
     return cast(bool, KEY_RE.match(key) and not KEY_CONSECUTIVE_RE.match(key))
+
+
+def validate_curie(value: str) -> bool:
+    """
+    Validates a curie value.
+    """
+
+    return CURIE_RE.match(value)
+
+
+def validate_datetime(value: str) -> bool:
+    """
+    Validates a datetime value.
+    """
+
+    return DATETIME_RE.match(value)
+
+
+def validate_name(value: str) -> bool:
+    """
+    Validates a name value.
+    """
+
+    return NAME_RE.match(value)
+
+
+def validate_hash(value: str) -> bool:
+    """
+    Validates a hash value.
+    """
+
+    return HASH_RE.match(value)
+
+
+def validate_integer(value: str) -> bool:
+    """
+    Validates an integer value.
+    """
+
+    return INTEGER_RE.match(value)
+
+
+def validate_period(value: str) -> bool:
+    """
+    Validates a period value.
+    """
+
+    if value.find("/") != -1:
+        start, end = value.split("/")
+
+        return _is_valid_period_part(start) and _is_valid_period_part(end)
+
+    return _is_valid_duration(value)
+
+
+def validate_timestamp(value: str) -> bool:
+    """
+    Validates a timestamp value.
+    """
+
+    return TIMESTAMP_RE.match(value)
+
+
+def validate_url(value: str) -> bool:
+    """
+    Validates a url value.
+    """
+
+    try:
+        result = urlparse(value)
+        is_known_scheme = result.scheme in ["http", "https"]
+        has_hostname = result.hostname and result.hostname.find(".") != -1
+
+        return is_known_scheme and has_hostname
+
+    except ValueError:
+        return False
+
+
+def validate_string(_value: str) -> bool:
+    """
+    Validates a string value.
+    """
+
+    return True
+
+
+def validate_text(_value: str) -> bool:
+    """
+    Validates a text value.
+    """
+
+    return True
 
 
 def _is_valid_duration(value):
