@@ -177,7 +177,7 @@ class Schema:
 
         self._attrs.append(attr)
 
-    def get(self, uid):
+    def get(self, uid) -> Optional[Attribute]:
         """
         Gets the attribute for the given identifier.
         """
