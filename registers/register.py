@@ -8,7 +8,7 @@ This module implements the Register representation and helper functions.
 :license: MIT, see LICENSE for more details.
 """
 
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, cast
 from .rsf.parser import Command
 from .log import Log, collect
 from .schema import Schema, attribute
@@ -150,8 +150,8 @@ register has an identifier.")
         """
 
         if self._uid is None:
-            raise MissingIdentifier("The context can't be derived unless the \
-register has an identifier.")
+            raise MissingIdentifier(("The context can't be derived unless the "
+                                     "register has an identifier."))
 
         result = {
             "total-records": len(self.records()),
@@ -170,6 +170,23 @@ register has an identifier.")
                                    .blob.get("custodian"))
 
         return result
+
+    def title(self) -> Optional[str]:
+        """
+        The human readable title.
+        """
+        record = cast(Record, self._metalog.find("register-name"))
+
+        return cast(Optional[str], record.blob.get("register-name"))
+
+    def description(self) -> Optional[str]:
+        """
+        The human readable description.
+        """
+        key = f"register:{self.uid}"
+        record = cast(Record, self._metalog.find(key))
+
+        return cast(Optional[str], record.blob.to_dict().get("text"))
 
     def is_ready(self) -> bool:
         """
