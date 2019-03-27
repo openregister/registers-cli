@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-This module implements the context command.
+This module implements the context group of commands.
 
 
 :copyright: © 2019 Crown Copyright (Government Digital Service)

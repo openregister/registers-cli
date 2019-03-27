@@ -59,6 +59,17 @@ class Attribute:
         self._cardinality = cardinality
         self._description = description
 
+    @staticmethod
+    def headers():
+        """
+        The attribute headers.
+        """
+
+        return ["field",
+                "datatype",
+                "cardinality",
+                "text"]
+
     def __eq__(self, other):
         return (self.uid == other.uid and
                 self.datatype == other.datatype and
@@ -77,8 +88,8 @@ class Attribute:
         """
 
         data = {"field": self._uid,
-                "datatype": repr(self._datatype.value),
-                "cardinality": repr(self._cardinality.value)}
+                "datatype": self._datatype.value,
+                "cardinality": self._cardinality.value}
 
         if self._description:
             data["text"] = self._description
@@ -166,7 +177,7 @@ class Schema:
 
         self._attrs.append(attr)
 
-    def get(self, uid):
+    def get(self, uid) -> Optional[Attribute]:
         """
         Gets the attribute for the given identifier.
         """
@@ -175,6 +186,16 @@ class Schema:
                 return attr
 
         return None
+
+    def to_dict(self):
+        """
+        Schema json representation.
+        """
+
+        return {
+            "primary_key": self._primary_key,
+            "attributes": [attr.to_dict() for attr in self._attrs]
+        }
 
 
 def string(uid: str, description: str = None) -> Attribute:

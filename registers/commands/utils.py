@@ -10,7 +10,7 @@ This module implements helper functions for the CLI commands.
 
 import json
 import click
-from .. import Register, Blob, Entry, Record, Hash
+from .. import Register, Blob, Entry, Record, Hash, Schema, Attribute
 from ..exceptions import CommandError
 
 
@@ -67,13 +67,7 @@ class JsonEncoder(json.JSONEncoder):
         if isinstance(obj, Hash):
             return repr(obj)
 
-        if isinstance(obj, Blob):
-            return obj.to_dict()
-
-        if isinstance(obj, Entry):
-            return obj.to_dict()
-
-        if isinstance(obj, Record):
+        if isinstance(obj, (Blob, Entry, Record, Schema, Attribute)):
             return obj.to_dict()
 
         return json.JSONEncoder.default(self, obj)

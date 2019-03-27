@@ -24,10 +24,11 @@ def cli():
     """
 
 
-cli.add_command(commands.init_command)
+cli.add_command(commands.blob_group)
 cli.add_command(commands.build_command)
 cli.add_command(commands.context_group)
-cli.add_command(commands.records_command)
-cli.add_command(commands.blob_group)
+cli.add_command(commands.init_command)
 cli.add_command(commands.patch_group)
+cli.add_command(commands.records_command)
+cli.add_command(commands.schema_group)
 cli.add_command(commands.value_group)

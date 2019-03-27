@@ -16,4 +16,5 @@ from .records import records_command
 from .blob import blob_group
 from .context import context_group
 from .patch import patch_group
+from .schema import schema_group
 from .value import value_group
