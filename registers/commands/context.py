@@ -105,17 +105,9 @@ def create_command(key, value, rsf_file, timestamp, apply_flag):
 
         utils.check_readiness(register)
 
-        if key == "custodian":
-            cmds = context_patch("custodian", value, timestamp)
-
-        elif key == "title":
-            cmds = context_patch("register-name", value, timestamp)
-
-        elif key == "description":
-            cmds = description_patch(value, timestamp, register)
+        patch = create_patch(key, value, timestamp, register)
 
         if apply_flag:
-            patch = Patch(register.schema(), cmds)
             register.apply(patch)
 
             with open(rsf_file, "a") as stream:
@@ -126,11 +118,32 @@ def create_command(key, value, rsf_file, timestamp, apply_flag):
             utils.success(msg)
 
         else:
-            for obj in cmds:
+            for obj in patch.commands:
                 click.echo(obj)
 
     except RegistersException as err:
         utils.error(str(err))
+
+
+def create_patch(key, value, timestamp, register):
+    """
+    Creates an RSF context patch.
+    """
+
+    if key == "custodian":
+        cmds = context_patch("custodian", value, timestamp)
+
+    elif key == "title":
+        cmds = context_patch("register-name", value, timestamp)
+
+    elif key == "description":
+        cmds = description_patch(value, timestamp, register)
+
+    else:
+        raise RegistersException(
+            f"A context patch for {key} can't be created.")
+
+    return Patch(register.schema(), cmds)
 
 
 def description_patch(value: str, timestamp: str,
