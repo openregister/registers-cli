@@ -76,3 +76,27 @@ class Command:
         """
 
         return self._value
+
+
+def assert_root_hash(root_hash: Hash) -> Command:
+    """
+    Composes an assert root hash command.
+    """
+
+    return Command(Action.AssertRootHash, root_hash)
+
+
+def add_item(blob: Blob) -> Command:
+    """
+    Composes an add item command.
+    """
+
+    return Command(Action.AddItem, blob)
+
+
+def append_entry(entry: Entry) -> Command:
+    """
+    Composes an append entry command.
+    """
+
+    return Command(Action.AppendEntry, entry)
