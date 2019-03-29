@@ -8,9 +8,12 @@ This module implements helper functions for the CLI commands.
 :license: MIT, see LICENSE for more details.
 """
 
+import csv
 import json
+from pathlib import Path
+from typing import List, Dict
 import click
-from .. import Register, Blob, Entry, Record, Hash, Schema, Attribute
+from .. import xsv, Register, Blob, Entry, Record, Hash, Schema, Attribute
 from ..exceptions import CommandError
 
 
@@ -90,3 +93,36 @@ def progressbar(iterable, **kwargs):
     bar.short_limit = 0.1
 
     return bar
+
+
+def write_csv_resource(path: Path, obj, headers):
+    """
+    Writes the given object to a file as CSV.
+    """
+
+    with open(f"{path}.csv", "w") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(headers)
+
+        if isinstance(obj, List):
+            for element in obj:
+                row = xsv.serialise_object(element, headers=headers)
+                writer.writerow(row)
+
+        elif isinstance(obj, Dict):
+            for element in obj.values():
+                row = xsv.serialise_object(element, headers=headers)
+                writer.writerow(row)
+
+        else:
+            row = xsv.serialise_object(obj, headers=headers)
+            writer.writerow(row)
+
+
+def write_json_resource(path: Path, obj):
+    """
+    Writes the given object to a file as JSON.
+    """
+
+    with open(f"{path}.json", "w") as stream:
+        serialise_json(obj, stream)

@@ -8,13 +8,12 @@ This module implements the build command.
 :license: MIT, see LICENSE for more details.
 """
 
-import csv
 import shutil
 from zipfile import ZipFile
 from pathlib import Path
-from typing import List, Dict
+from typing import List
 import click
-from .. import rsf, xsv, log, Register, Entry, Record
+from .. import rsf, log, Register, Entry, Record
 from ..exceptions import RegistersException
 from . import utils
 from .utils import error
@@ -230,7 +229,7 @@ def build_context(path: Path, register: Register):
 
     context = register.context()
 
-    write_json_resource(path, context)
+    utils.write_json_resource(path, context)
 
 
 def build_archive(path: Path, register: Register):
@@ -254,38 +253,5 @@ def write_resource(path: Path, obj, headers):
     Generates the pair of files (csv, json) for the given object.
     """
 
-    write_csv_resource(path, obj, headers)
-    write_json_resource(path, obj)
-
-
-def write_csv_resource(path: Path, obj, headers):
-    """
-    Writes the given object to a file as CSV.
-    """
-
-    with open(f"{path}.csv", "w") as stream:
-        writer = csv.writer(stream)
-        writer.writerow(headers)
-
-        if isinstance(obj, List):
-            for element in obj:
-                row = xsv.serialise_object(element, headers=headers)
-                writer.writerow(row)
-
-        elif isinstance(obj, Dict):
-            for element in obj.values():
-                row = xsv.serialise_object(element, headers=headers)
-                writer.writerow(row)
-
-        else:
-            row = xsv.serialise_object(obj, headers=headers)
-            writer.writerow(row)
-
-
-def write_json_resource(path: Path, obj):
-    """
-    Writes the given object to a file as JSON.
-    """
-
-    with open(f"{path}.json", "w") as stream:
-        utils.serialise_json(obj, stream)
+    utils.write_csv_resource(path, obj, headers)
+    utils.write_json_resource(path, obj)

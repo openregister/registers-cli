@@ -8,9 +8,10 @@ This module implements the records command.
 :license: MIT, see LICENSE for more details.
 """
 
+import csv
 from io import StringIO
 import click
-from .. import rsf, Register
+from .. import rsf, xsv, Register, Record
 from ..exceptions import RegistersException
 from . import utils
 
@@ -31,6 +32,9 @@ def records_command(rsf_file, output_format):
 
         records = register.records()
 
+        if not records:
+            return
+
         if output_format == "json":
             stream = StringIO()
             utils.serialise_json(records, stream)
@@ -40,8 +44,19 @@ def records_command(rsf_file, output_format):
             click.echo(stream.read())
 
         elif output_format == "csv":
-            # TODO:
-            utils.error("Not implemented")
+            stream = StringIO()
+            headers = Record.headers(register.schema())
+
+            writer = csv.writer(stream)
+
+            for record in records.values():
+                row = xsv.serialise_object(record, headers=headers)
+                writer.writerow(row)
+
+            stream.seek(0)
+
+            for row in stream:
+                click.echo(row[:-1])
 
         else:
             for record in records.values():
