@@ -47,8 +47,8 @@ def show_command(rsf_file, output_format):
             click.echo(json.dumps(context))
 
         else:
+            context["register"] = register.uid
             context["fields"] = ";".join(context["register-record"]["fields"])
-            context["register"] = context["register-record"]["register"]
             context["registry"] = context["register-record"]["registry"]
 
             del context["register-record"]
