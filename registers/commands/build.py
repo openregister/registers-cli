@@ -9,11 +9,11 @@ This module implements the build command.
 """
 
 import json
-import pkg_resources
 import shutil
 from zipfile import ZipFile
 from pathlib import Path
 from typing import List, Union, Dict
+import pkg_resources
 import click
 from .. import rsf, log, Register, Entry, Record, Cardinality
 from ..exceptions import RegistersException

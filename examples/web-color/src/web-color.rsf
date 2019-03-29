@@ -1,0 +1,17 @@
+assert-root-hash	sha-256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+add-item	{"name":"web-color"}
+append-entry	system	name	2019-03-19T07:00:00Z	sha-256:ca6e70780a0b7bb214a4f341f77f96d6e833cf7b451e94a574931a7e1ff0d590
+add-item	{"register-name":"The Web Color register"}
+append-entry	system	register-name	2019-03-19T07:00:00Z	sha-256:8d2ce1aa8d979a9a49a6063e2fc376b4f8f4eb8ca2440c5855ea2579d878437f
+add-item	{"custodian":"Someone"}
+append-entry	system	custodian	2019-03-19T07:00:00Z	sha-256:f483e614406709231ec8eb63e80ad80e2fc52756bfef5765a3dabc20c180f21e
+add-item	{"cardinality":"1","datatype":"string","field":"web-color","text":"The hexadecimal code for the color."}
+append-entry	system	field:web-color	2019-03-19T07:00:00Z	sha-256:8ad699187b41a89cd61ea80a673038d9e8f40cdf6a50e6f1f85a238650b9e622
+add-item	{"cardinality":"1","datatype":"string","field":"name","text":"The color name. Acts as a synonym in CSS."}
+append-entry	system	field:name	2019-03-19T07:00:00Z	sha-256:173823fa32121fe49975c6c84117911b2b0665e64ee4949703a0c93ee3c6f7b0
+add-item	{"cardinality":"1","datatype":"datetime","field":"start-date","text":"The date the color got into a W3C recommendation."}
+append-entry	system	field:start-date	2019-03-19T07:00:00Z	sha-256:bf03203be5c5962e9fac44bd56d646b986969c974b64ea7af7b72cbb37ed3239
+add-item	{"cardinality":"1","datatype":"datetime","field":"end-date","text":"The date the color got deprecated in a W3C recommendation."}
+append-entry	system	field:end-date	2019-03-19T07:00:00Z	sha-256:a737d23daad6fe0d650c00cfa2347b6070c2b078ae0b62842e04d34e97f50aee
+add-item	{"fields":["web-color","name","start-date","end-date"],"registry":"w3c","text":"Web colours recommended by a W3C recommendation."}
+append-entry	system	register:web-color	2019-03-19T07:00:00Z	sha-256:ccb3490a2de46dcadad2ac5b87d4c9522ecc822b53b5ee602d6e08f5c99d4cf4
