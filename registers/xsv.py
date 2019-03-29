@@ -11,7 +11,7 @@ Multivalues have the delimiter semi-colon ``;`` and it can't be changed.
 :license: MIT, see LICENSE for more details.
 """
 
-from typing import List, NewType, Dict, cast, Optional
+from typing import List, NewType, Dict, cast, Optional, TextIO
 import csv
 from io import StringIO
 from .blob import Blob, Value
@@ -25,7 +25,7 @@ from .validator import validate, validate_key
 Row = NewType("Row", List[str])
 
 
-def serialise(stream: StringIO, obj, headers: List[str]):
+def serialise(stream: TextIO, obj, headers: List[str]):
     """
     Serialises the given object to CSV.
     """
