@@ -61,9 +61,7 @@ def show_command(rsf_file, output_format):
                 writer.writerow(context)
 
                 stream.seek(0)
-
-                for row in stream:
-                    click.echo(row[:-1])
+                click.echo(stream.read())
 
             else:
                 for key, value in context.items():

@@ -66,8 +66,7 @@ def show_command(rsf_file, output_format):
 
             stream.seek(0)
 
-            for row in stream:
-                click.echo(row[:-1])
+            click.echo(stream.read())
 
         else:
             for attr in schema.attributes:

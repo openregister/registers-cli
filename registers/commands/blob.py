@@ -8,7 +8,6 @@ This module implements the blob command group.
 :license: MIT, see LICENSE for more details.
 """
 
-import csv
 import json
 from io import StringIO
 import click
@@ -30,37 +29,25 @@ def blob_group():
 
 
 @blob_group.command(name="list")
+@click.argument("rsf_file", type=click.Path(exists=True))
 @click.option("--format", "output_format", type=click.Choice(["json", "csv"]))
-@click.option("--rsf", "rsf_file", required=True, type=click.Path(exists=True),
-              help="An RSF file with valid metadata")
-@click.option("--output", "output_filename",
-              help="The filename to write the result.")
-def list_command(rsf_file, output_format, output_filename):
+def list_command(rsf_file, output_format):
     """
-    Lists the blobs found in the RSF file.
+    Lists the blobs found in the given RSF_FILE.
     """
 
     try:
-        if output_filename is None:
+        if output_format:
             stream = StringIO()
-            result = list_blobs(rsf_file, output_format, stream)
+            list_blobs(rsf_file, output_format, stream)
 
-            if output_format == "csv":
-                for row in stream:
-                    click.echo(row[:-1])
-
-            elif output_format == "json":
-                click.echo(stream.read())
-
-            else:
-                result = list_blobs(rsf_file)
-
-                for blob in result:
-                    click.echo(repr(blob))
+            click.echo(stream.read())
 
         else:
-            with open(output_filename, "w") as stream:
-                list_blobs(rsf_file, output_format, stream)
+            result = list_blobs(rsf_file)
+
+            for blob in result:
+                click.echo(repr(blob))
 
     except RegistersException as err:
         utils.error(str(err))
@@ -114,12 +101,7 @@ def list_blobs(rsf_file, output_format=None, stream=None):
     if output_format == "csv":
         schema = register.schema()
         headers = [attr.uid for attr in schema.attributes]
-        writer = csv.writer(stream)
-        writer.writerow(headers)
-
-        for blob in blobs.values():
-            row = xsv.serialise_object(blob, headers=headers)
-            writer.writerow(row)
+        xsv.serialise(stream, blobs, headers)
 
         stream.seek(0)
 

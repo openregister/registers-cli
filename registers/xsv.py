@@ -25,6 +25,29 @@ from .validator import validate, validate_key
 Row = NewType("Row", List[str])
 
 
+def serialise(stream: StringIO, obj, headers: List[str]):
+    """
+    Serialises the given object to CSV.
+    """
+
+    writer = csv.writer(stream)
+    writer.writerow(headers)
+
+    if isinstance(obj, List):
+        for element in obj:
+            row = serialise_object(element, headers=headers)
+            writer.writerow(row)
+
+    elif isinstance(obj, Dict):
+        for element in obj.values():
+            row = serialise_object(element, headers=headers)
+            writer.writerow(row)
+
+    else:
+        row = serialise_object(obj, headers=headers)
+        writer.writerow(row)
+
+
 def serialise_object(obj, headers: List[str] = None) -> Row:
     """
     Builds a row from the given object and headers.

@@ -8,7 +8,6 @@ This module implements the records command.
 :license: MIT, see LICENSE for more details.
 """
 
-import csv
 from io import StringIO
 import click
 from .. import rsf, xsv, Register, Record
@@ -47,11 +46,7 @@ def records_command(rsf_file, output_format):
             stream = StringIO()
             headers = Record.headers(register.schema())
 
-            writer = csv.writer(stream)
-
-            for record in records.values():
-                row = xsv.serialise_object(record, headers=headers)
-                writer.writerow(row)
+            xsv.serialise(stream, records, headers)
 
             stream.seek(0)
 
