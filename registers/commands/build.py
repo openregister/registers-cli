@@ -8,6 +8,7 @@ This module implements the build command.
 :license: MIT, see LICENSE for more details.
 """
 
+import pkg_resources
 import shutil
 from zipfile import ZipFile
 from pathlib import Path
@@ -99,8 +100,9 @@ def build_command(rsf_file, target):
         build_archive(build_path, register)
 
         if target == "netlify":
-            shutil.copyfile("registers/data/_redirects",
-                            build_path.joinpath("_redirects"))
+            with open(build_path.joinpath("_redirects"), "wb") as handle:
+                handle.write(pkg_resources.resource_string("registers",
+                                                           "data/_redirects"))
 
         click.secho("Build complete.", fg="green", bold=True)
 
