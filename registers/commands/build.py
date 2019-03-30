@@ -137,7 +137,8 @@ def build_entries(path: Path, register: Register):
 
     with utils.progressbar(collection, label='Building entries') as bar:
         for entry in bar:
-            write_resource(path.joinpath(repr(entry.position)), entry, headers)
+            write_resource(path.joinpath(repr(entry.position)),
+                           [entry], headers)
 
     build_entry_slices(path.joinpath("slices"), register)
 
