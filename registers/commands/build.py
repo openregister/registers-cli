@@ -21,7 +21,9 @@ from .utils import error
 
 @click.command(name="build")
 @click.argument("rsf_file", type=click.Path(exists=True))
-def build_command(rsf_file):
+@click.option("--target", type=click.Choice(["netlify"]),
+              help="Publication target")
+def build_command(rsf_file, target):
     """
     Builds the static version of the register. Derives all required files such
     that a static web server conforms to the REST API specification (V1).
@@ -61,6 +63,13 @@ def build_command(rsf_file):
 
     Note that the name of the file RSF_FILE is not used for any part of the
     build process.
+
+    Publication target
+    ==================
+
+    If the publication target `--target` is specified it will generate the
+    appropriate rewrite and redirect rules such that the API behaves as close
+    as possible to the original reference implementation.
     """
 
     try:
@@ -88,6 +97,10 @@ def build_command(rsf_file):
         build_commands(commands_path, register)
         build_context(context_path, register)
         build_archive(build_path, register)
+
+        if target == "netlify":
+            shutil.copyfile("registers/data/_redirects",
+                            build_path.joinpath("_redirects"))
 
         click.secho("Build complete.", fg="green", bold=True)
 

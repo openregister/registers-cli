@@ -1,0 +1,59 @@
+/register	/register.json	200
+
+# Record list
+/records.json	/records/index.json	200
+/records.csv	/records/index.csv	200
+/records	/records/index.csv	200	Accept=text/csv
+/records	/records/index.json	200
+
+# Record detail and trail
+/records/*	/records/:splat.csv	200	Accept=text/csv
+/records/*	/records/:splat.json	200
+
+
+# Item list
+/items.json	/items/index.json	200
+/items.csv	/items/index.csv	200
+/items	/items/index.csv	200	Accept=text/csv
+/items	/items/index.json	200
+
+# Item detail
+/items/*	/items/:splat.csv	200	Accept=text/csv
+/items/*	/items/:splat.json	200
+
+
+# Entry slices
+/entries.json start=:slice	/entries/slices/:slice.json	200
+/entries.csv start=:slice	/entries/slices/:slice.csv	200
+/entries start=:slice	/entries/slices/:slice.csv	200	Accept=text/csv
+/entries start=:slice	/entries/slices/:slice.json	200
+
+# Entry list
+/entries.json	/entries/index.json	200
+/entries.csv	/entries/index.csv	200
+/entries	/entries/index.csv	200	Accept=text/csv
+/entries	/entries/index.json	200
+
+# Entry detail
+/entries/*	/entries/:splat.csv	200	Accept=text/csv
+/entries/*	/entries/:splat.json	200
+
+
+# RSF
+/commands	/commands/0.rsf	200
+/download-rsf	/commands/0.rsf	200
+/download-rsf/:slice	/commands/:slice.rsf	200
+
+
+# Archive
+/download-register	/archive.zip	200
+
+
+# Legacy
+
+/record	/records	301
+/record/*	/records/:splat	301
+/entry	/entries	301
+/entry/*	/entries/:splat	301
+/item	/items	301
+/item/*	/items/:splat	301
