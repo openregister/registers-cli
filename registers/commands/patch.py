@@ -44,6 +44,7 @@ def create_command(xsv_file, rsf_file, timestamp, apply_flag):
     You must not use `;` as separator as it will conflict with cardinality 'n'
     value separator.
     """
+
     try:
         result = create(xsv_file, rsf_file, timestamp,
                         apply_flag=apply_flag)

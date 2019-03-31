@@ -75,7 +75,5 @@ def test_regression_fec_patch(fec_register, fec_old_patch):
 
         fec_register.apply(patch)
 
-        print(list(zip(fec_old_patch, patch.commands)))
-
         for old, new in zip(fec_old_patch, patch.commands):
             assert old == repr(new)
