@@ -5,7 +5,10 @@ setup(
     version="0.1.0",
     licence="MIT",
     packages=find_packages(),
-    package_data={'': ["LICENSE"], 'registers': ['data/_redirects']},
+    package_data={
+        '': ["LICENSE"],
+        'registers': ['data/_redirects', 'data/openapi.json']
+    },
     include_package_data=True,
     python_requires=">=3.6",
     install_requires=[

@@ -1,0 +1,370 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Generic Register",
+    "description": "This is the registers API. It implements the [Registers Specification V1](https://spec.openregister.org/v1).",
+    "license": {
+      "name": "OGL v3.0",
+      "url": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+    },
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/register": {
+      "get": {
+        "tags": [
+          "metadata"
+        ],
+        "summary": "Get information about a register",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stats"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/records": {
+      "get": {
+        "tags": [
+          "records"
+        ],
+        "summary": "Gets the list of records.",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "record_key": {
+                      "$ref": "#/components/schemas/Record"
+                    }
+                  },
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/Record"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/records/{key}": {
+      "get": {
+        "tags": [
+          "records"
+        ],
+        "summary": "Get a record by key",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "Key of the record to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Record not found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/records/{key}/entries": {
+      "get": {
+        "tags": [
+          "records"
+        ],
+        "summary": "Get the record trail of change",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "Key of the record to return",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Entry"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Record not found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/entries": {
+      "get": {
+        "tags": [
+          "entries"
+        ],
+        "summary": "Get the list of entries",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "description": "The entry number to start from",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Entry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/entries/{number}": {
+      "get": {
+        "tags": [
+          "entries"
+        ],
+        "summary": "Get the entry for the given number",
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "description": "The number of the entry to return",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Entry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/items": {
+      "get": {
+        "tags": [
+          "items"
+        ],
+        "summary": "Get the list of items",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sha-256:item_hash": {
+                      "$ref": "#/components/schemas/Item"
+                    }
+                  },
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/Item"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/items/{hash}": {
+      "get": {
+        "tags": [
+          "items"
+        ],
+        "summary": "Get the item for the given hash",
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "description": "The hash of the item to return",
+            "schema": {
+              "type": "string",
+              "pattern": "sha-256:[a-f0-9]{64}"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/download-register": {
+      "get": {
+        "tags": [
+          "archive"
+        ],
+        "summary": "Get the register as a zip file",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Record": {
+        "type": "object",
+        "properties": {
+          "entry-number": {
+            "type": "string"
+          },
+          "index-entry-number": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "item": {
+            "$ref": "#/components/schemas/Item"
+          }
+        }
+      },
+      "Entry": {
+        "type": "object",
+        "properties": {
+          "entry-number": {
+            "type": "string"
+          },
+          "index-entry-number": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "item-hash": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Item": {
+        "type": "object"
+      },
+      "Stats": {
+        "required": [
+          "total-records",
+          "total-entries",
+          "last-updated"
+        ],
+        "type": "object",
+        "properties": {
+          "total-records": {
+            "type": "integer"
+          },
+          "total-entries": {
+            "type": "integer"
+          },
+          "register-record": {
+            "type": "object",
+            "properties": {
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "registry": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "register": {
+                "type": "string"
+              }
+            }
+          },
+          "custodian": {
+            "type": "string"
+          },
+          "last-updated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

@@ -8,13 +8,14 @@ This module implements the build command.
 :license: MIT, see LICENSE for more details.
 """
 
+import json
 import pkg_resources
 import shutil
 from zipfile import ZipFile
 from pathlib import Path
-from typing import List
+from typing import List, Union, Dict
 import click
-from .. import rsf, log, Register, Entry, Record
+from .. import rsf, log, Register, Entry, Record, Cardinality
 from ..exceptions import RegistersException
 from . import utils
 from .utils import error
@@ -98,6 +99,8 @@ def build_command(rsf_file, target):
         build_commands(commands_path, register)
         build_context(context_path, register)
         build_archive(build_path, register)
+
+        build_openapi(build_path, register)
 
         if target == "netlify":
             with open(build_path.joinpath("_redirects"), "wb") as handle:
@@ -250,7 +253,7 @@ def build_context(path: Path, register: Register):
 
 def build_archive(path: Path, register: Register):
     """
-    Generates archive (zip) file.
+    Generates the archive (zip) file.
     """
 
     with ZipFile(f"{path}/archive.zip", "w") as archive:
@@ -262,6 +265,36 @@ def build_archive(path: Path, register: Register):
                       f"{register.uid}/record/index.json")
         archive.write(f"build/{register.uid}/register.json",
                       f"{register.uid}/register.json")
+
+
+def build_openapi(path: Path, register: Register):
+    """
+    Generates the openapi file.
+    """
+
+    openapi = json.loads(pkg_resources.resource_string("registers", "data/openapi.json"))  # NOQA
+
+    openapi["info"]["title"] = register.title() or register.uid
+
+    if register.description():
+        openapi["info"]["description"] = register.description()
+
+    item_props = {}
+
+    for attribute in register.schema().attributes:
+        item_props[attribute.uid] = _attr_schema(attribute)
+
+    openapi["components"]["schemas"]["Item"]["properties"] = item_props
+
+    with open(path.joinpath("openapi.json"), "w") as handle:
+        handle.write(json.dumps(openapi))
+
+
+def _attr_schema(attribute) -> Union[str, Dict]:
+    if attribute.cardinality == Cardinality.One:
+        return {"type": "string"}
+
+    return {"type": "array", "items": {"type": "string"}}
 
 
 def write_resource(path: Path, obj, headers):
