@@ -137,7 +137,8 @@ class Log:
 def collect(commands: List[Command],  # pylint: disable=too-many-branches
             log: Optional[Log] = None,
             metalog: Optional[Log] = None,
-            relaxed=False) -> Dict[str, object]:
+            relaxed=False,
+            progress=None) -> Dict[str, object]:
     """
     Collects blobs, entries and computes records and schema (?)
 
@@ -149,43 +150,13 @@ def collect(commands: List[Command],  # pylint: disable=too-many-branches
     data = log or Log()
     metadata = metalog or Log()
     blobs = {**data.blobs, **metadata.blobs}
-    errors = []
+    errors: List[ValidationError] = []
 
     for command in commands:
-        if command.action == Action.AssertRootHash:
-            digest = cast(Hash, command.value)
+        _collect_command(command, data, metadata, blobs, errors, relaxed)
 
-            if digest != data.digest():
-                raise InconsistentLog(digest, data.digest(), data.size)
-
-        elif command.action == Action.AddItem:
-            blobs[command.value.digest()] = cast(Blob, command.value)
-
-        elif command.action == Action.AppendEntry:
-            entry = cast(Entry, command.value)
-            blob = blobs.get(entry.blob_hash)
-
-            if blob is None:
-                raise OrphanEntry(entry)
-
-            if entry.scope == Scope.System:
-                metadata.insert(blob)
-                record = metadata.snapshot().get(entry.key)
-                (_, err) = _collect_entry(entry, record)
-
-                if err and not relaxed:
-                    errors.append(err)
-                else:
-                    metadata.insert(entry)
-            else:
-                data.insert(blob)
-                record = data.snapshot().get(entry.key)
-                (_, err) = _collect_entry(entry, record)
-
-                if err and not relaxed:
-                    errors.append(err)
-                else:
-                    data.insert(entry)
+        if progress:
+            progress()
 
     return {"data": data, "metadata": metadata, "errors": errors}
 
@@ -202,6 +173,48 @@ def slice(log: Log, start_position: int) -> List[Command]:
         commands.append(Command(Action.AppendEntry, entry))
 
     return commands
+
+
+def _collect_command(command: Command,
+                     data: Log,
+                     metadata: Log,
+                     blobs: Dict[Hash, Blob],
+                     errors: List[ValidationError],
+                     relaxed: bool):
+    if command.action == Action.AssertRootHash:
+        digest = cast(Hash, command.value)
+
+        if digest != data.digest():
+            raise InconsistentLog(digest, data.digest(), data.size)
+
+    elif command.action == Action.AddItem:
+        blobs[command.value.digest()] = cast(Blob, command.value)
+
+    elif command.action == Action.AppendEntry:
+        entry = cast(Entry, command.value)
+        blob = blobs.get(entry.blob_hash)
+
+        if blob is None:
+            raise OrphanEntry(entry)
+
+        if entry.scope == Scope.System:
+            metadata.insert(blob)
+            record = metadata.snapshot().get(entry.key)
+            (_, err) = _collect_entry(entry, record)
+
+            if err and not relaxed:
+                errors.append(err)
+            else:
+                metadata.insert(entry)
+        else:
+            data.insert(blob)
+            record = data.snapshot().get(entry.key)
+            (_, err) = _collect_entry(entry, record)
+
+            if err and not relaxed:
+                errors.append(err)
+            else:
+                data.insert(entry)
 
 
 Result = Tuple[Optional[Entry], Optional[ValidationError]]

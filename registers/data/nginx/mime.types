@@ -1,0 +1,4 @@
+types {
+  "text/csv; charset=UTF-8" csv;
+  application/json json;
+}

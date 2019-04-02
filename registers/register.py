@@ -8,7 +8,7 @@ This module implements the Register representation and helper functions.
 :license: MIT, see LICENSE for more details.
 """
 
-from typing import List, Dict, Optional, cast
+from typing import List, Dict, Optional, Callable, cast
 from .rsf.parser import Command
 from .log import Log, collect
 from .schema import Schema, attribute
@@ -23,7 +23,8 @@ class Register:
     Represents a register.
     """
 
-    def __init__(self, commands: List[Command] = None):
+    def __init__(self, commands: List[Command] = None,
+                 progress: Optional[Callable] = None):
         self._log = Log()
         self._metalog = Log()
         self._commands: List[Command] = []
@@ -31,15 +32,16 @@ class Register:
         self._update_date = None
 
         if commands is not None:
-            self._load_commands(commands)
+            self._load_commands(commands, progress)
 
-    def _load_commands(self, commands: List[Command]):
+    def _load_commands(self, commands: List[Command],
+                       progress: Optional[Callable]):
         """
         Attempts to process the given commands and build the log and metalog.
         """
 
         if commands:
-            pair = collect(commands, relaxed=True)
+            pair = collect(commands, relaxed=True, progress=progress)
 
             self._commands = commands
             self._log = cast(Log, pair["data"])
