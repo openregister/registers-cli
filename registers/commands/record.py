@@ -97,7 +97,7 @@ def show_command(key, rsf_file, output_format):
         if not records:
             return
 
-        record = records[key]
+        record = records.get(key)
 
         if not record:
             return
@@ -121,8 +121,9 @@ def show_command(key, rsf_file, output_format):
             click.echo(stream.read())
 
         else:
-            for record in records.values():
-                click.echo(record.blob)
+            for (attr, value) in record.blob:
+                click.secho(f"{attr}:", fg="bright_yellow")
+                click.echo(f"    {value}")
 
     except RegistersException as err:
         utils.error(str(err))
