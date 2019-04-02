@@ -15,6 +15,7 @@ isort = "~=4.3"
 click = "~=7.0"
 pytest-cov = "*"
 pylint = "*"
+pyinstaller = "*"
 
 [packages]
 requests = "~=2.21"

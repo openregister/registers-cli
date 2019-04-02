@@ -23,3 +23,9 @@ lint:
 pylint:
 	pipenv run pylint registers
 .PHONY: lint
+
+# Build a single binary
+dist:
+	rm -rf dist build/registers
+	pipenv run pyinstaller --clean -n registers --onefile cli.py
+.PHONY: dist

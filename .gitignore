@@ -4,4 +4,6 @@
 .venv
 .mypy*
 build
+dist
+*.spec
 .coverage
