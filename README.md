@@ -1,4 +1,4 @@
-## Registers CLI
+# Registers CLI
 
 The Registers CLI lets you manage your registers expressed as Register
 Serialisation Format (RSF).
