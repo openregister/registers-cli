@@ -12,7 +12,7 @@ from typing import List, Dict, Optional, cast
 from .rsf.parser import Command
 from .log import Log, collect
 from .schema import Schema, attribute
-from .exceptions import MissingIdentifier
+from .exceptions import MissingIdentifier, ValidationError
 from .entry import Entry
 from .record import Record
 from .patch import Patch
@@ -39,11 +39,11 @@ class Register:
         """
 
         if commands:
-            pair = collect(commands)
+            pair = collect(commands, relaxed=True)
 
             self._commands = commands
-            self._log = pair["data"]
-            self._metalog = pair["metadata"]
+            self._log = cast(Log, pair["data"])
+            self._metalog = cast(Log, pair["metadata"])
             self._collect_basic_metadata()
 
     def _collect_basic_metadata(self):
@@ -58,15 +58,17 @@ class Register:
         elif not self._metalog.is_empty():
             self._update_date = self._metalog.entries[-1].timestamp
 
-    def apply(self, patch: Patch):
+    def apply(self, patch: Patch) -> List[ValidationError]:
         """
         Attempts to apply the given patch to the Register.
         """
         pair = collect(patch.commands, self._log, self._metalog)
-        self._log = pair["data"]
-        self._metalog = pair["metadata"]
+        self._log = cast(Log, pair["data"])
+        self._metalog = cast(Log, pair["metadata"])
         self._commands.extend(patch.commands)
         self._collect_update_date()
+
+        return cast(List[ValidationError], pair["errors"])
 
     def stats(self) -> Dict[str, int]:
         """
