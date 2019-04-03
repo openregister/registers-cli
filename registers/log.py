@@ -7,7 +7,7 @@ This module implements the Log representation and utilities to work with it.
 :license: MIT, see LICENSE for more details.
 """
 
-from typing import List, Dict, Union, Optional, cast
+from typing import List, Dict, Union, Optional, cast, Tuple
 from .rsf.parser import Command, Action
 from .exceptions import (OrphanEntry, InsertException, DuplicatedEntry,
                          ValidationError)
@@ -105,16 +105,20 @@ class Log:
         return self.snapshot().get(key)
 
 
-def collect(commands: List[Command],
+def collect(commands: List[Command],  # pylint: disable=too-many-branches
             log: Optional[Log] = None,
-            metalog: Optional[Log] = None) -> Dict[str, Union[Log, ValidationError]]:
+            metalog: Optional[Log] = None,
+            relaxed=False) -> Dict[str, object]:
     """
     Collects blobs, entries and computes records and schema (?)
+
+    :param relaxed: If True it accepts duplicated entries. This param
+                    ensures backwards compatibility with current registers.
+                    For example, the country register has a duplicate entry
+                    for `field:country`.
     """
     data = log or Log()
-    data_records = data.snapshot()
     metadata = metalog or Log()
-    metadata_records = metadata.snapshot()
     blobs = {**data.blobs, **metadata.blobs}
     errors = []
 
@@ -129,38 +133,29 @@ def collect(commands: List[Command],
 
         elif command.action == Action.AppendEntry:
             entry = cast(Entry, command.value)
+            blob = blobs.get(entry.blob_hash)
 
-            if entry.scope == Scope.System:  # type: ignore
-                record = metadata_records.get(entry.key)
+            if blob is None:
+                raise OrphanEntry(entry)
 
-                if record and record.blob.digest() == entry.blob_hash:
-                    errors.append(DuplicatedEntry(entry.key, record.blob))
+            if entry.scope == Scope.System:
+                metadata.insert(blob)
+                record = metadata.snapshot().get(entry.key)
+                (_, err) = _collect_entry(entry, record)
+
+                if err and not relaxed:
+                    errors.append(err)
                 else:
-                    metadata.insert(command.value)
-
+                    metadata.insert(entry)
             else:
-                record = data_records.get(entry.key)
+                data.insert(blob)
+                record = data.snapshot().get(entry.key)
+                (_, err) = _collect_entry(entry, record)
 
-                if record and record.blob.digest() == entry.blob_hash:
-                    errors.append(DuplicatedEntry(entry.key, record.blob))
+                if err and not relaxed:
+                    errors.append(err)
                 else:
-                    data.insert(command.value)
-
-    for entry in data.entries:
-        blob = blobs.get(entry.blob_hash)
-
-        if blob is None:
-            raise OrphanEntry(entry)
-
-        data.insert(blob)
-
-    for entry in metadata.entries:
-        blob = blobs.get(entry.blob_hash)
-
-        if blob is None:
-            raise OrphanEntry(entry)
-
-        metadata.insert(blob)
+                    data.insert(entry)
 
     return {"data": data, "metadata": metadata, "errors": errors}
 
@@ -177,3 +172,13 @@ def slice(log: Log, start_position: int) -> List[Command]:
         commands.append(Command(Action.AppendEntry, entry))
 
     return commands
+
+
+Result = Tuple[Optional[Entry], Optional[ValidationError]]
+
+
+def _collect_entry(entry: Entry, record: Optional[Record]) -> Result:
+    if record and record.blob.digest() == entry.blob_hash:
+        return (None, DuplicatedEntry(entry.key, record.blob))
+
+    return (entry, None)
