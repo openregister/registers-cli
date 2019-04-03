@@ -79,6 +79,15 @@ class CardinalityMismatch(ValidationError):
         super().__init__(message)
 
 
+class DuplicatedEntry(ValidationError):
+    """Attempted to apply an entry that already exists in the Log."""
+    def __init__(self, key, blob):
+        message = (f"The latest entry for {key} already "
+                   f"has blob {blob.to_json()}.")
+
+        super().__init__(message)
+
+
 class RepresentationError(ValidationError):
     """
     Found a value that does not conform the string representation for the

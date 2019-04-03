@@ -9,7 +9,8 @@ This module implements the Log representation and utilities to work with it.
 
 from typing import List, Dict, Union, Optional, cast
 from .rsf.parser import Command, Action
-from .exceptions import OrphanEntry, InsertException
+from .exceptions import (OrphanEntry, InsertException, DuplicatedEntry,
+                         ValidationError)
 from .blob import Blob
 from .hash import Hash
 from .record import Record
@@ -106,13 +107,16 @@ class Log:
 
 def collect(commands: List[Command],
             log: Optional[Log] = None,
-            metalog: Optional[Log] = None) -> Dict[str, Log]:
+            metalog: Optional[Log] = None) -> Dict[str, Union[Log, ValidationError]]:
     """
     Collects blobs, entries and computes records and schema (?)
     """
     data = log or Log()
+    data_records = data.snapshot()
     metadata = metalog or Log()
+    metadata_records = metadata.snapshot()
     blobs = {**data.blobs, **metadata.blobs}
+    errors = []
 
     for command in commands:
         if command.action == Action.AssertRootHash:
@@ -124,11 +128,23 @@ def collect(commands: List[Command],
             blobs[command.value.digest()] = cast(Blob, command.value)
 
         elif command.action == Action.AppendEntry:
-            if command.value.scope == Scope.System:  # type: ignore
-                metadata.insert(command.value)
+            entry = cast(Entry, command.value)
+
+            if entry.scope == Scope.System:  # type: ignore
+                record = metadata_records.get(entry.key)
+
+                if record and record.blob.digest() == entry.blob_hash:
+                    errors.append(DuplicatedEntry(entry.key, record.blob))
+                else:
+                    metadata.insert(command.value)
 
             else:
-                data.insert(command.value)
+                record = data_records.get(entry.key)
+
+                if record and record.blob.digest() == entry.blob_hash:
+                    errors.append(DuplicatedEntry(entry.key, record.blob))
+                else:
+                    data.insert(command.value)
 
     for entry in data.entries:
         blob = blobs.get(entry.blob_hash)
@@ -146,7 +162,7 @@ def collect(commands: List[Command],
 
         metadata.insert(blob)
 
-    return {"data": data, "metadata": metadata}
+    return {"data": data, "metadata": metadata, "errors": errors}
 
 
 def slice(log: Log, start_position: int) -> List[Command]:
