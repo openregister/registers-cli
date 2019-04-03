@@ -142,7 +142,7 @@ def quote_value(value: str) -> str:
 ##############################################################################
 
 
-def deserialise(buffer: StringIO, schema: Schema) -> List[Blob]:
+def deserialise(buffer: TextIO, schema: Schema) -> List[Blob]:
     """
     Reads an XSV stream and returns a list of blobs coerced with the given
     schema.

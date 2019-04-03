@@ -9,6 +9,7 @@ This module implements helper functions for the CLI commands.
 """
 
 import json
+from typing import List
 from pathlib import Path
 import click
 from .. import xsv, Register, Blob, Entry, Record, Hash, Schema, Attribute
@@ -20,7 +21,12 @@ def error(message):
     Sends a message to stderr and exits with code error 1.
     """
 
-    click.secho(message, fg="red", bold=True, err=True)
+    if isinstance(message, List):
+        for element in message:
+            click.secho(str(element), fg="red", bold=True, err=True)
+    else:
+        click.secho(message, fg="red", bold=True, err=True)
+
     exit(1)
 
 

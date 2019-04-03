@@ -9,7 +9,6 @@ This module implements the patch command group.
 """
 
 from datetime import datetime
-from typing import Dict, Any
 import click
 from .. import rsf, xsv, Register, Patch
 from ..exceptions import RegistersException
@@ -46,18 +45,18 @@ def create_command(xsv_file, rsf_file, timestamp, apply_flag):
     """
 
     try:
-        result = create(xsv_file, rsf_file, timestamp,
-                        apply_flag=apply_flag)
+        patch = create(xsv_file, rsf_file, timestamp,
+                       apply_flag=apply_flag)
 
         if apply_flag:
-            number = result['added_commands_number']
+            number = len(patch.commands)
             msg = f"Appended {number} changes to {rsf_file}"
 
             utils.success(msg)
 
         else:
-            for obj in result:
-                click.echo(obj)
+            for command in patch.commands:
+                click.echo(command)
 
     except RegistersException as err:
         utils.error(str(err))
@@ -73,8 +72,8 @@ def apply_command(patch_file, rsf_file):
     """
 
     try:
-        result = apply(patch_file, rsf_file)
-        number = result['added_commands_number']
+        patch = apply(patch_file, rsf_file)
+        number = len(patch.commands)
         msg = f"Appended {number} changes to {rsf_file}"
 
         utils.success(msg)
@@ -83,7 +82,8 @@ def apply_command(patch_file, rsf_file):
         utils.error(str(err))
 
 
-def create(xsv_file, rsf_file, timestamp, apply_flag=False):
+def create(xsv_file: str, rsf_file: str,
+           timestamp: str, apply_flag: bool = False) -> Patch:
     """
     Creates an RSF patch.
     """
@@ -102,17 +102,15 @@ def create(xsv_file, rsf_file, timestamp, apply_flag=False):
         errors = register.apply(patch)
 
         if errors:
-            for err in errors:
-                click.secho(str(err), fg="bright_red")
-            exit(1)
+            utils.error(errors)
 
         if apply_flag:
             return _apply(patch, rsf_file)
 
-        return patch.commands
+        return patch
 
 
-def apply(patch_file, rsf_file):
+def apply(patch_file: str, rsf_file: str) -> Patch:
     """
     Applies an RSF patch.
     """
@@ -129,14 +127,12 @@ def apply(patch_file, rsf_file):
     errors = register.apply(patch)
 
     if errors:
-        for err in errors:
-            click.secho(str(err), fg="bright_red")
-        exit(1)
+        utils.error(errors)
 
     return _apply(patch, rsf_file)
 
 
-def _apply(patch: Patch, rsf_file: str) -> Dict[str, Any]:
+def _apply(patch: Patch, rsf_file: str) -> Patch:
     """
     Applies a patch and saves RSF to the given file.
     """
@@ -144,8 +140,4 @@ def _apply(patch: Patch, rsf_file: str) -> Dict[str, Any]:
     with open(rsf_file, "a") as handle:
         handle.writelines([f"{cmd}\n" for cmd in patch.commands])
 
-    summary = {
-        "added_commands_number": len(patch.commands)
-    }
-
-    return summary
+    return patch
