@@ -99,9 +99,14 @@ def create(xsv_file, rsf_file, timestamp, apply_flag=False):
         blobs = xsv.deserialise(handle, schema)
         patch = Patch(schema, blobs, timestamp)
 
-        if apply_flag:
-            register.apply(patch)
+        errors = register.apply(patch)
 
+        if errors:
+            for err in errors:
+                click.secho(str(err), fg="bright_red")
+            exit(1)
+
+        if apply_flag:
             return _apply(patch, rsf_file)
 
         return patch.commands
@@ -121,7 +126,12 @@ def apply(patch_file, rsf_file):
 
     patch_cmds = rsf.read(patch_file)
     patch = Patch(schema, patch_cmds)
-    register.apply(patch)
+    errors = register.apply(patch)
+
+    if errors:
+        for err in errors:
+            click.secho(str(err), fg="bright_red")
+        exit(1)
 
     return _apply(patch, rsf_file)
 
