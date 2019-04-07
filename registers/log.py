@@ -10,11 +10,12 @@ This module implements the Log representation and utilities to work with it.
 from typing import List, Dict, Union, Optional, cast, Tuple
 from .rsf.parser import Command, Action
 from .exceptions import (OrphanEntry, InsertException, DuplicatedEntry,
-                         ValidationError)
+                         ValidationError, InconsistentLog)
 from .blob import Blob
 from .hash import Hash
 from .record import Record
 from .entry import Entry, Scope
+from . import merkle
 
 
 class Log:
@@ -27,6 +28,33 @@ class Log:
         self._entries = entries or []
         self._blobs = blobs or {}
         self._size = len(self._entries)
+        self._digest = merkle.Tree(self.byte_entries()).root_hash
+
+    def __hash__(self):
+        return self.digest()
+
+    def __eq__(self, other):
+        return self.digest() == other.digest()
+
+    def digest(self) -> Hash:
+        """
+        The digest of the Log according to V1. Another name for the log digest
+        is the "merkle root hash" which is used in the RSF command
+        `assert-root-hash`.
+        """
+
+        return Hash("sha-256", self._digest.hex())
+
+    def byte_entries(self):
+        """
+        The list of entries represented as bytes. Typically you want to use
+        this as leaves for a merkle tree:
+
+            from registers import merkle
+            merkle.Tree(log.byte_entries)
+        """
+
+        return [entry.bytes() for entry in self._entries]
 
     @property
     def blobs(self) -> Dict[Hash, Blob]:
@@ -80,7 +108,7 @@ class Log:
             "total-blobs": len(self._blobs)
         }
 
-    def insert(self, obj: Union[Entry, Blob, Hash]):
+    def insert(self, obj: Union[Entry, Blob]):
         """
         Inserts either a blob or an entry to the log.
         """
@@ -89,6 +117,7 @@ class Log:
             self._size = self.size + 1
             obj.set_position(self._size)
             self._entries.append(obj)
+            self._digest = merkle.Tree(self.byte_entries()).root_hash
 
         elif isinstance(obj, Blob):
             self._blobs[obj.digest()] = obj
@@ -124,9 +153,10 @@ def collect(commands: List[Command],  # pylint: disable=too-many-branches
 
     for command in commands:
         if command.action == Action.AssertRootHash:
-            # Ignore assert commands until we have a way to check their
-            # consistency.
-            continue
+            digest = cast(Hash, command.value)
+
+            if digest != data.digest():
+                raise InconsistentLog(digest, data.digest(), data.size)
 
         elif command.action == Action.AddItem:
             blobs[command.value.digest()] = cast(Blob, command.value)
