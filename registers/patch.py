@@ -13,8 +13,9 @@ from typing import List, cast, Union
 from datetime import datetime
 from .entry import Entry, Scope
 from .blob import Blob
+from .hash import Hash
 from .schema import Schema
-from .rsf import Command, Action
+from .rsf import Command, Action, assert_root_hash, add_item, append_entry
 from .core import format_timestamp
 
 
@@ -35,8 +36,8 @@ class Patch:
     Or from a list of RSF commands:
 
     >>> cmds = [
-    ...   rsf.Command(rsf.Action.AddItem, Blob({"foo": "abc", "bar": "xyz"})),
-    ...   rsf.Command(rsf.Action.AppendEntry, Entry("foo", Scope.User,
+    ...   rsf.add_item(Blob({"foo": "abc", "bar": "xyz"})),
+    ...   rsf.append_entry(Entry("foo", Scope.User,
     ... timestamp, Hash("sha-256",
     ... "5dd4fe3b0de91882dae86b223ca531b5c8f2335d9ee3fd0ab18dfdc2871d0c61")))]
     >>> patch = Patch(sch, blobs, timestamp)
@@ -99,6 +100,23 @@ class Patch:
                                       [blob],
                                       self._timestamp))
 
+    def seal(self, start: Hash, end: Hash):
+        """
+        Seals the patch with the given hashes. It makes the patch applicable to
+        a particular size of the register.
+        """
+
+        self._commands.insert(0, assert_root_hash(start))
+        self._commands.append(assert_root_hash(end))
+
+    def is_sealed(self) -> bool:
+        """
+        Checks if a patch is sealed.
+        """
+
+        return (self._commands[0].action == Action.AssertRootHash and
+                self._commands[-1].action == Action.AssertRootHash)
+
 
 def collect(primary_key: str, blobs: List[Blob],
             timestamp: str) -> List[Command]:
@@ -111,7 +129,7 @@ def collect(primary_key: str, blobs: List[Blob],
     for blob in blobs:
         key = cast(str, blob.get(primary_key))
         entry = Entry(key, Scope.User, timestamp, blob.digest())
-        commands.append(Command(Action.AddItem, blob))
-        commands.append(Command(Action.AppendEntry, entry))
+        commands.append(add_item(blob))
+        commands.append(append_entry(entry))
 
     return commands

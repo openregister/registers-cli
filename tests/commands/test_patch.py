@@ -8,6 +8,7 @@ def test_patch_create():
     tsv_filename = "tests/fixtures/fec_patch.tsv"
     timestamp = "2019-03-31T00:00:00Z"
     expected = """
+assert-root-hash	sha-256:f73ce68b4f90603b68ad41329699597134a5649a1bf577517e661d08eb8cfba7
 add-item	{"further-education-college-uk":"109","name":"Herefordshire, Ludlow and North Shropshire College","region":"further-education-college-region-uk:1","start-date":"2018-11-01"}
 append-entry	user	109	2019-03-31T00:00:00Z	sha-256:df74e0693d066cfdf5efa5d6bd3db54f41dc36144b25842d87df188719d29dc7
 add-item	{"end-date":"2018-11-01","further-education-college-uk":"168","name":"North Shropshire College","region":"further-education-college-region-uk:1"}
@@ -28,6 +29,7 @@ add-item	{"further-education-college-uk":"196","name":"Unified Seevic Palmer's C
 append-entry	user	196	2019-03-31T00:00:00Z	sha-256:9757e8330e7ce33ab55ec68d75e80e2b684a6f6b3c750e7bf703ff0edc10345a
 add-item	{"further-education-college-uk":"313","name":"The Northern School of Art","region":"further-education-college-region-uk:1","start-date":"2018-09-01"}
 append-entry	user	313	2019-03-31T00:00:00Z	sha-256:2b13d0314bcf1afd1c7fd760a3bfa4b620d28d6ad0a4b70f3c1ed9b0fcf09505
+assert-root-hash	sha-256:470e653143735f8c71cd087058c9bff6aa136730627ba5ccc0b44b6bd024170a
 """.lstrip()  # NOQA
     runner = CliRunner()
     result = runner.invoke(commands.patch.create_command,
@@ -48,7 +50,7 @@ def test_patch_create_apply():
     with open(orig_rsf, "r") as handler_rsf, open(orig_tsv, "r") as handler_tsv:  # NOQA
         register_filename = "fec.rsf"
         tsv_filename = "patch.rsf"
-        expected = f"Appended 20 changes to {register_filename}\n"
+        expected = f"Appended 22 changes to {register_filename}\n"
 
         with runner.isolated_filesystem():
             with open(register_filename, 'w') as handler:

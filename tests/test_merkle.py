@@ -1,7 +1,6 @@
-import pytest
-import json
 from math import ceil
 from hashlib import sha256
+import pytest
 from registers import rsf, merkle, Register, Entry, Scope
 
 

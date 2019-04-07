@@ -98,11 +98,15 @@ def create(xsv_file: str, rsf_file: str,
     with open(xsv_file, "r", newline="") as handle:
         blobs = xsv.deserialise(handle, schema)
         patch = Patch(schema, blobs, timestamp)
+        start_root_hash = register.log.digest()
 
         errors = register.apply(patch)
 
         if errors:
             utils.error(errors)
+
+        end_root_hash = register.log.digest()
+        patch.seal(start_root_hash, end_root_hash)
 
         if apply_flag:
             return _apply(patch, rsf_file)
@@ -137,7 +141,12 @@ def _apply(patch: Patch, rsf_file: str) -> Patch:
     Applies a patch and saves RSF to the given file.
     """
 
+    if patch.is_sealed():
+        cmds = patch.commands[1:]
+    else:
+        cmds = patch.commands
+
     with open(rsf_file, "a") as handle:
-        handle.writelines([f"{cmd}\n" for cmd in patch.commands])
+        handle.writelines([f"{cmd}\n" for cmd in cmds])
 
     return patch
