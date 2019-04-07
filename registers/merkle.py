@@ -19,6 +19,29 @@ Level = List[Digest]
 class Tree:
     """
     Represents a Merkle tree.
+
+    A tree such as:
+
+                  ___ i = h(h+e) ___
+                 |                   |
+           _ h = h(f+g) _            |
+          |              |           |
+      f = h(a+b)     g = h(c+d)      |
+      |        |     |        |      |
+      a        b     c        d      e
+
+    Is represented as a sequence of levels where orphan nodes are replicated in
+    the next level:
+
+        [
+            [a, b, c, d, e], -- level 0
+            [f, g, e],       -- level 1
+            [h, e],          -- level 2
+            [i],             -- root
+        ]
+
+    Leaves and nodes are tagged with 0x00 and 0x01 respectively as defined in
+    RFC 6962, section 2.1 https://tools.ietf.org/html/rfc6962#section-2.1
     """
 
     def __init__(self, leaves: List[Leaf]):
