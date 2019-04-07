@@ -2,7 +2,7 @@ import pytest
 import json
 from math import ceil
 from hashlib import sha256
-from registers import merkle, Entry, Scope
+from registers import rsf, merkle, Register, Entry, Scope
 
 
 def expected_height(n):
@@ -75,3 +75,23 @@ def test_entry_root_hash():
     expected = tree.root_hash.hex()
 
     assert expected == "a2002581c7402683e8197faafaefb9ba1f0ca48cee2d6ff461ab086b703472e5" # NOQA
+
+
+@pytest.fixture
+def country_register():
+    commands = rsf.read('tests/fixtures/country.rsf')
+    register = Register(commands)
+
+    return register
+
+
+def test_register_consistency(country_register):
+    leaves = [entry.bytes() for entry
+              in country_register.log.entries]
+
+    tree = merkle.Tree(leaves)
+    actual = tree.root_hash.hex()
+    expected = ("3bacea769627d20ed9a2cfde54173da3"
+                "c9d630b3fc9ed80431a1cee2196c8a4a")
+
+    assert actual == expected

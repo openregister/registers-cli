@@ -102,7 +102,6 @@ class Entry:
         dump = json.dumps(self.to_dict(), separators=(",", ":"),
                           ensure_ascii=False)
 
-        print(dump)
         return dump.encode("utf-8")
 
     def set_position(self, number: int):
