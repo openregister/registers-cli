@@ -38,7 +38,7 @@ def test_tree_height(test_input, expected):
     assert tree.height == expected
 
 
-leaves = [bytes([]),
+LEAVES = [bytes([]),
           bytes([0x00]),
           bytes([0x10]),
           bytes([0x20, 0x21]),
@@ -50,14 +50,14 @@ leaves = [bytes([]),
 
 
 @pytest.mark.parametrize("test_input,height,expected",
-                         [(leaves[0:1], 1, "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"), # NOQA
-                          (leaves[0:2], 2, "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"), # NOQA
-                          (leaves[0:3], 3, "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77"), # NOQA
-                          (leaves[0:4], 3, "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"), # NOQA
-                          (leaves[0:5], 4, "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4"), # NOQA
-                          (leaves[0:6], 4, "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef"), # NOQA
-                          (leaves[0:7], 4, "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c"), # NOQA
-                          (leaves, 4, "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328")]) # NOQA
+                         [(LEAVES[0:1], 1, "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"), # NOQA
+                          (LEAVES[0:2], 2, "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"), # NOQA
+                          (LEAVES[0:3], 3, "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77"), # NOQA
+                          (LEAVES[0:4], 3, "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"), # NOQA
+                          (LEAVES[0:5], 4, "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4"), # NOQA
+                          (LEAVES[0:6], 4, "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef"), # NOQA
+                          (LEAVES[0:7], 4, "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c"), # NOQA
+                          (LEAVES, 4, "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328")]) # NOQA
 def test_root_hash(test_input, height, expected):
     tree = merkle.Tree(test_input)
 
@@ -92,5 +92,27 @@ def test_register_consistency(country_register):
     actual = tree.root_hash.hex()
     expected = ("3bacea769627d20ed9a2cfde54173da3"
                 "c9d630b3fc9ed80431a1cee2196c8a4a")
+
+    assert actual == expected
+
+
+@pytest.mark.parametrize("idx,size,expected",
+                         [[0, 0, []],
+                          [0, 1, []],
+                          [0, 2, ["96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7"]], # NOQA
+                          [0, 8, ["96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7", # NOQA
+                                  "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e", # NOQA
+                                  "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"]], # NOQA
+                          [5, 8, ["bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b", # NOQA
+                                  "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0", # NOQA
+                                  "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"]], # NOQA
+                          [2, 3, ["fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"]], # NOQA
+                          [1, 5, ["6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d", # NOQA
+                                  "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e", # NOQA
+                                  "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"]] # NOQA
+                         ])
+def test_audit_path(idx, size, expected):
+    tree = merkle.Tree(LEAVES[:size])
+    actual = [digest.hex() for digest in merkle.path(tree, idx)]
 
     assert actual == expected

@@ -8,7 +8,7 @@ This module implements the Merkle tree algorithm.
 """
 
 from hashlib import sha256
-from typing import List, Callable
+from typing import List, Callable, Optional, Tuple
 
 
 Leaf = bytes
@@ -81,6 +81,14 @@ class Tree:
         """
 
         return self._height
+
+    @property
+    def width(self):
+        """
+        The width of the tree (or the size of the input leaves).
+        """
+
+        return len(self._leaves)
 
 
 def build_levels(leaves: List[Leaf], fun: Callable) -> List[Level]:
@@ -176,3 +184,89 @@ def hash_empty(fun: Callable) -> Digest:
     """
 
     return fun(b"").digest()
+
+
+def path(tree: Tree, node_index: int, level: int = 0) -> List[Digest]:
+    """
+    Computes the path of nodes for the given node index.
+
+    :param node_index: The 0-based index of the node to compute the path for.
+    :param level: The 0-based index for the level.
+    """
+
+    audit_path: List[Digest] = []
+
+    snapshot = tree.width
+
+    if snapshot == 0:
+        return audit_path
+
+    last_node_index = (snapshot - 1) >> level
+
+    is_last_level = level >= len(tree.levels)
+    node_overflow = node_index > last_node_index
+
+    if is_last_level or node_overflow:
+        return audit_path
+
+    # Move up, recording the sibling of the current node at each level.
+    while last_node_index > 0:
+        (segment,
+         node_index,
+         last_node_index,
+         level) = path_segment(tree,
+                               node_index,
+                               last_node_index,
+                               level)
+
+        if segment:
+            audit_path.append(segment)
+
+    return audit_path
+
+
+def path_segment(tree: Tree,
+                 node_index: int,
+                 last_node_index: int,
+                 level: int) -> Tuple[Optional[Digest], int, int, int]:
+    """
+    Finds the next path segment for the given tree and node_index
+    """
+
+    segment = None
+    sib = sibling(node_index)
+
+    if sib <= last_node_index:
+        segment = tree.levels[level][sib]
+
+    # sib > last_node_index. Ignore orphan copies in upper levels.
+
+    node_index = parent(node_index)
+    last_node_index = parent(last_node_index)
+    level = level + 1
+
+    return (segment, node_index, last_node_index, level)
+
+
+def sibling(node_index):
+    """
+    Computes the index of the node's (left or right) sibling in the same level.
+    """
+
+    return node_index - 1 if is_right_child(node_index) else node_index + 1
+
+
+def is_right_child(node_index):
+    """
+    Checks if the given node index is the right child in the binary tree.
+    """
+
+    return node_index % 2 == 1
+
+
+def parent(node_index):
+    """
+    Computes the parent node index.
+    """
+
+    return node_index // 2
