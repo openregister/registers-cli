@@ -88,6 +88,20 @@ class DuplicatedEntry(ValidationError):
         super().__init__(message)
 
 
+class InconsistentLog(ValidationError):
+    """
+    The given log is not consistent with the given root hash.
+    """
+
+    def __init__(self, expected, actual, size):
+        message = (f"The log at size {size} was expected to have a root hash"
+                   f"\n  {expected}"
+                   f"\nbut it is"
+                   f"\n  {actual}")
+
+        super().__init__(message)
+
+
 class RepresentationError(ValidationError):
     """
     Found a value that does not conform the string representation for the

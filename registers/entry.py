@@ -67,14 +67,14 @@ class Entry:
         The digest of the Entry. V1 has undefined behaviour for this.
         """
 
-        return sha256(self.to_json().encode('utf-8')).hexdigest()
+        return sha256(self.to_json().encode("utf-8")).hexdigest()
 
     def to_json(self):
         """
         The entry json representation.
         """
 
-        return json.dumps([self.to_dict()], separators=(',', ':'),
+        return json.dumps([self.to_dict()], separators=(",", ":"),
                           ensure_ascii=False)
 
     def to_dict(self):
@@ -89,6 +89,20 @@ class Entry:
             "key": self._key,
             "item-hash": [str(self._blob_hash)]
         }
+
+    def bytes(self):
+        """
+        The byte representation of an entry. A helper to use
+        together with a Merkle Tree.
+
+        TODO: Check what is the actual byte representation in ORJ. It
+        is not documented nor specified.
+        """
+
+        dump = json.dumps(self.to_dict(), separators=(",", ":"),
+                          ensure_ascii=False)
+
+        return dump.encode("utf-8")
 
     def set_position(self, number: int):
         """

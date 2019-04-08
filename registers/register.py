@@ -65,10 +65,21 @@ class Register:
         pair = collect(patch.commands, self._log, self._metalog)
         self._log = cast(Log, pair["data"])
         self._metalog = cast(Log, pair["metadata"])
-        self._commands.extend(patch.commands)
+
+        self._apply_commands(patch.commands)
         self._collect_update_date()
 
         return cast(List[ValidationError], pair["errors"])
+
+    def _apply_commands(self, cmds: List[Command]):
+        """
+        Deduplicates assert root commands.
+        """
+
+        if self._commands[-1] == cmds[0]:
+            self._commands.extend(cmds[1:])
+        else:
+            self._commands.extend(cmds)
 
     def stats(self) -> Dict[str, int]:
         """
