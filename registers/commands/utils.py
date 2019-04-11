@@ -57,12 +57,22 @@ this command."
         raise CommandError(msg)
 
 
-def serialise_json(obj, stream):
+def serialise_json(obj, stream, compact=False):
     """
     Helper to serialise to JSON.
     """
 
-    json.dump(obj, stream, ensure_ascii=False, indent=2, cls=JsonEncoder)
+    if compact:
+        json.dump(obj, stream,
+                  ensure_ascii=False,
+                  separators=(',', ':'),
+                  cls=JsonEncoder)
+
+    else:
+        json.dump(obj, stream,
+                  ensure_ascii=False,
+                  indent=2,
+                  cls=JsonEncoder)
 
 
 class JsonEncoder(json.JSONEncoder):
@@ -73,6 +83,9 @@ class JsonEncoder(json.JSONEncoder):
     def default(self, obj):  # pylint: disable=E0202,W0221
         if isinstance(obj, Hash):
             return repr(obj)
+
+        if isinstance(obj, Record):
+            return {obj.entry.key: obj.to_dict()}
 
         if isinstance(obj, (Blob, Entry, Record, Schema, Attribute)):
             return obj.to_dict()
