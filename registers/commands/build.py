@@ -9,6 +9,7 @@ This module implements the build command.
 """
 
 import json
+import yaml
 import shutil
 from zipfile import ZipFile
 from pathlib import Path
@@ -23,7 +24,7 @@ from .utils import error
 
 @click.command(name="build")
 @click.argument("rsf_file", type=click.Path(exists=True))
-@click.option("--target", type=click.Choice(["netlify"]),
+@click.option("--target", type=click.Choice(["netlify", "cloudfoundry"]),
               help="Publication target")
 def build_command(rsf_file, target):
     """
@@ -87,6 +88,15 @@ def build_command(rsf_file, target):
 
         build_path.mkdir(parents=True)
 
+        if target == "netlify":
+            with open(build_path.joinpath("_redirects"), "wb") as handle:
+                handle.write(pkg_resources.resource_string("registers",
+                                                           "data/_redirects"))
+        if target == "cloudfoundry":
+            build_cloudfoundry(build_path, register)
+            build_path = build_path.joinpath("public")
+            build_path.mkdir()
+
         blobs_path = build_path.joinpath("items")
         entries_path = build_path.joinpath("entries")
         records_path = build_path.joinpath("records")
@@ -102,11 +112,6 @@ def build_command(rsf_file, target):
 
         build_openapi(build_path, register)
 
-        if target == "netlify":
-            with open(build_path.joinpath("_redirects"), "wb") as handle:
-                handle.write(pkg_resources.resource_string("registers",
-                                                           "data/_redirects"))
-
         click.secho("Build complete.", fg="green", bold=True)
 
     except RegistersException as err:
@@ -120,7 +125,6 @@ def build_blobs(path: Path, register: Register):
 
     if path.exists():
         path.rmdir()
-
     path.mkdir()
 
     sch = register.schema()
@@ -257,13 +261,13 @@ def build_archive(path: Path, register: Register):
     """
 
     with ZipFile(f"{path}/archive.zip", "w") as archive:
-        archive.write(f"build/{register.uid}/items/index.json",
+        archive.write(f"{path}/items/index.json",
                       f"{register.uid}/item/index.json")
-        archive.write(f"build/{register.uid}/entries/index.json",
+        archive.write(f"{path}/entries/index.json",
                       f"{register.uid}/entry/index.json")
-        archive.write(f"build/{register.uid}/records/index.json",
+        archive.write(f"{path}/records/index.json",
                       f"{register.uid}/record/index.json")
-        archive.write(f"build/{register.uid}/register.json",
+        archive.write(f"{path}/register.json",
                       f"{register.uid}/register.json")
 
 
@@ -288,6 +292,20 @@ def build_openapi(path: Path, register: Register):
 
     with open(path.joinpath("openapi.json"), "w") as handle:
         handle.write(json.dumps(openapi))
+
+
+def build_cloudfoundry(path: Path, register: Register):
+    static_config_files = ["buildpack.yml", "mime.types", "nginx.conf"]
+    for filename in static_config_files:
+        cf_path = f"data/cloudfoundry/{filename}"
+        with open(path.joinpath(filename), "wb") as handle:
+            handle.write(pkg_resources.resource_string("registers", cf_path))
+
+    manifest = yaml.load(pkg_resources.resource_stream("registers", "data/cloudfoundry/manifest.yml"), Loader=yaml.BaseLoader)  # type: ignore #TODO review type warning # NOQA
+    manifest["applications"][0]["name"] = register.uid # NOQA
+
+    with open(path.joinpath("manifest.yml"), "w") as handle: # type: ignore #TODO review type warning # NOQA
+        handle.write(yaml.dump(manifest))
 
 
 def _attr_schema(attribute) -> Union[str, Dict]:

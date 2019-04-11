@@ -1,0 +1,4 @@
+---
+applications:
+- name: change-me
+  buildpack: https://github.com/cloudfoundry/nginx-buildpack.git
