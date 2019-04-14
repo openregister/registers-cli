@@ -9,12 +9,12 @@ This module implements the build command.
 """
 
 import json
-import yaml
 import shutil
 from zipfile import ZipFile
 from pathlib import Path
 from typing import List, Union, Dict
 import pkg_resources
+import yaml
 import click
 from .. import rsf, log, Register, Entry, Record, Cardinality
 from ..exceptions import RegistersException
@@ -97,7 +97,7 @@ def build_command(rsf_file, target):
             build_target_resource("_redirects", "netlify", build_path)
 
         if target == "docker":
-            build_docker(build_path, register)
+            build_docker(build_path)
 
         if target == "cloudfoundry":
             build_cloudfoundry(build_path, register)
@@ -275,20 +275,31 @@ def build_openapi(path: Path, register: Register):
 
 
 def build_cloudfoundry(path: Path, register: Register):
-    static_config_files = ["buildpack.yml", "mime.types", "nginx.conf"]
-    for filename in static_config_files:
-        cf_path = f"data/cloudfoundry/{filename}"
-        with open(path.joinpath(filename), "wb") as handle:
-            handle.write(pkg_resources.resource_string("registers", cf_path))
+    """
+    Creates files for the cloudfoundry target.
+    """
 
-    manifest = yaml.load(pkg_resources.resource_stream("registers", "data/cloudfoundry/manifest.yml"), Loader=yaml.BaseLoader)  # type: ignore #TODO review type warning # NOQA
-    manifest["applications"][0]["name"] = register.uid # NOQA
+    build_target_resource("buildpack.yml", "cloudfoundry", path)
+    build_target_resource("mime.types", "nginx", path)
+    build_target_resource("nginx.conf", "nginx", path)
+    build_lua_resources(path)
 
-    with open(path.joinpath("manifest.yml"), "w") as handle: # type: ignore #TODO review type warning # NOQA
+    with open(path.joinpath("default.conf"), "w") as handle:
+        filename = "data/nginx/default.conf"
+        conf = pkg_resources.resource_string("registers", filename)
+        res = conf.decode("utf-8").replace("listen 80", "listen {{port}}")
+        handle.write(res)
+
+    with open(path.joinpath("manifest.yml"), "w") as handle:
+        filename = "data/cloudfoundry/manifest.yml"
+        stream = pkg_resources.resource_stream("registers", filename)
+        manifest = yaml.load(stream, Loader=yaml.BaseLoader)  # type: ignore
+        manifest["applications"][0]["name"] = register.uid
+
         handle.write(yaml.dump(manifest))
 
 
-def build_docker(path: Path, register: Register):
+def build_docker(path: Path):
     """
     Creates files for the docker target.
     """
@@ -297,6 +308,14 @@ def build_docker(path: Path, register: Register):
     build_target_resource("Dockerfile", "docker", path)
     build_target_resource("docker-compose.yml", "docker", path)
     build_target_resource("mime.types", "nginx", path)
+
+    build_lua_resources(path)
+
+
+def build_lua_resources(path: Path):
+    """
+    Creates files for nginx lua files.
+    """
 
     path.joinpath("lua").mkdir()
 
