@@ -48,10 +48,14 @@ def show_command(rsf_file, output_format):
 
         else:
             context["register"] = register.uid
-            context["fields"] = ";".join(context["register-record"]["fields"])
-            context["registry"] = context["register-record"]["registry"]
 
-            del context["register-record"]
+            if context.get("register-record"):
+                register_record = context["register-record"]
+
+                context["fields"] = ";".join(register_record["fields"])
+                context["registry"] = register_record["registry"]
+
+                del context["register-record"]
 
             if output_format == "csv":
                 stream = StringIO()
