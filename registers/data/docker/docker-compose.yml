@@ -1,0 +1,11 @@
+version: '3'
+services:
+  api:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+      - ./mime.types:/etc/nginx/mime.types
+      - ./public:/usr/local/openresty/nginx/public
+      - ./lua:/usr/local/openresty/nginx/lua

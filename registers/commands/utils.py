@@ -107,7 +107,7 @@ def progressbar(iterable, **kwargs):
                             bar_template=tpl,
                             **kwargs)
 
-    bar.short_limit = 0.1
+    bar.short_limit = 0
 
     return bar
 

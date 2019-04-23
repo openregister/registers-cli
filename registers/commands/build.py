@@ -9,12 +9,12 @@ This module implements the build command.
 """
 
 import json
-import yaml
 import shutil
 from zipfile import ZipFile
 from pathlib import Path
 from typing import List, Union, Dict
 import pkg_resources
+import yaml
 import click
 from .. import rsf, log, Register, Entry, Record, Cardinality
 from ..exceptions import RegistersException
@@ -24,7 +24,9 @@ from .utils import error
 
 @click.command(name="build")
 @click.argument("rsf_file", type=click.Path(exists=True))
-@click.option("--target", type=click.Choice(["netlify", "cloudfoundry"]),
+@click.option("--target", type=click.Choice(["netlify",
+                                             "cloudfoundry",
+                                             "docker"]),
               help="Publication target")
 def build_command(rsf_file, target):
     """
@@ -77,7 +79,10 @@ def build_command(rsf_file, target):
 
     try:
         cmds = rsf.read(rsf_file)
-        register = Register(cmds)
+
+        with utils.progressbar(range(1, len(cmds)),
+                               label="Loading register") as bar:
+            register = Register(cmds, lambda: bar.update(1))
 
         utils.check_readiness(register)
 
@@ -89,27 +94,24 @@ def build_command(rsf_file, target):
         build_path.mkdir(parents=True)
 
         if target == "netlify":
-            with open(build_path.joinpath("_redirects"), "wb") as handle:
-                handle.write(pkg_resources.resource_string("registers",
-                                                           "data/_redirects"))
+            build_target_resource("_redirects", "netlify", build_path)
+
+        if target == "docker":
+            build_docker(build_path)
+
         if target == "cloudfoundry":
             build_cloudfoundry(build_path, register)
+
+        if target in ["cloudfoundry", "docker"]:
             build_path = build_path.joinpath("public")
             build_path.mkdir()
 
-        blobs_path = build_path.joinpath("items")
-        entries_path = build_path.joinpath("entries")
-        records_path = build_path.joinpath("records")
-        commands_path = build_path.joinpath("commands")
-        context_path = build_path.joinpath("register")
-
-        build_blobs(blobs_path, register)
-        build_entries(entries_path, register)
-        build_records(records_path, register)
-        build_commands(commands_path, register)
-        build_context(context_path, register)
+        build_blobs(build_path.joinpath("items"), register)
+        build_entries(build_path.joinpath("entries"), register)
+        build_records(build_path.joinpath("records"), register)
+        build_commands(build_path.joinpath("commands"), register)
+        build_context(build_path.joinpath("register"), register)
         build_archive(build_path, register)
-
         build_openapi(build_path, register)
 
         click.secho("Build complete.", fg="green", bold=True)
@@ -161,28 +163,6 @@ def build_entries(path: Path, register: Register):
         for entry in bar:
             write_resource(path.joinpath(repr(entry.position)),
                            [entry], headers)
-
-    build_entry_slices(path.joinpath("slices"), register)
-
-
-def build_entry_slices(path: Path, register: Register):
-    """
-    Generates all entry slice files.
-    """
-
-    if path.exists():
-        path.rmdir()
-
-    path.mkdir()
-
-    headers = Entry.headers()
-
-    with utils.progressbar(range(0, register.log.size),
-                           label='Building entry slices') as bar:
-        for idx in bar:
-            write_resource(path.joinpath(str(idx + 1)),
-                           register.log.entries[idx:],
-                           headers)
 
 
 def build_records(path: Path, register: Register):
@@ -295,17 +275,64 @@ def build_openapi(path: Path, register: Register):
 
 
 def build_cloudfoundry(path: Path, register: Register):
-    static_config_files = ["buildpack.yml", "mime.types", "nginx.conf"]
-    for filename in static_config_files:
-        cf_path = f"data/cloudfoundry/{filename}"
-        with open(path.joinpath(filename), "wb") as handle:
-            handle.write(pkg_resources.resource_string("registers", cf_path))
+    """
+    Creates files for the cloudfoundry target.
+    """
 
-    manifest = yaml.load(pkg_resources.resource_stream("registers", "data/cloudfoundry/manifest.yml"), Loader=yaml.BaseLoader)  # type: ignore #TODO review type warning # NOQA
-    manifest["applications"][0]["name"] = register.uid # NOQA
+    build_target_resource("buildpack.yml", "cloudfoundry", path)
+    build_target_resource("mime.types", "nginx", path)
+    build_target_resource("nginx.conf", "nginx", path)
+    build_lua_resources(path)
 
-    with open(path.joinpath("manifest.yml"), "w") as handle: # type: ignore #TODO review type warning # NOQA
+    with open(path.joinpath("default.conf"), "w") as handle:
+        filename = "data/nginx/default.conf"
+        conf = pkg_resources.resource_string("registers", filename)
+        res = conf.decode("utf-8").replace("listen 80", "listen {{port}}")
+        handle.write(res)
+
+    with open(path.joinpath("manifest.yml"), "w") as handle:
+        filename = "data/cloudfoundry/manifest.yml"
+        stream = pkg_resources.resource_stream("registers", filename)
+        manifest = yaml.load(stream, Loader=yaml.BaseLoader)  # type: ignore
+        manifest["applications"][0]["name"] = register.uid
+
         handle.write(yaml.dump(manifest))
+
+
+def build_docker(path: Path):
+    """
+    Creates files for the docker target.
+    """
+
+    build_target_resource("default.conf", "nginx", path)
+    build_target_resource("Dockerfile", "docker", path)
+    build_target_resource("docker-compose.yml", "docker", path)
+    build_target_resource("mime.types", "nginx", path)
+
+    build_lua_resources(path)
+
+
+def build_lua_resources(path: Path):
+    """
+    Creates files for nginx lua files.
+    """
+
+    path.joinpath("lua").mkdir()
+
+    build_target_resource("lua/registers.lua", "nginx", path)
+    build_target_resource("lua/utils.lua", "nginx", path)
+    build_target_resource("lua/errors.lua", "nginx", path)
+
+
+def build_target_resource(name: str, target: str, path: Path):
+    """
+    Creates a file for the given target.
+    """
+
+    with open(path.joinpath(name), "wb") as handle:
+        resource = pkg_resources.resource_string("registers",
+                                                 f"data/{target}/{name}")
+        handle.write(resource)
 
 
 def _attr_schema(attribute) -> Union[str, Dict]:
