@@ -40,9 +40,8 @@
 
 
 # RSF
-/commands	/commands/0.rsf	200
-/download-rsf	/commands/0.rsf	200
-/download-rsf/:slice	/commands/:slice.rsf	200
+/commands	/commands.rsf	200
+/download-rsf	/commands.rsf	200
 
 
 # Archive
