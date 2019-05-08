@@ -16,7 +16,7 @@ from typing import List, Union, Dict
 import pkg_resources
 import yaml
 import click
-from .. import rsf, log, Register, Entry, Record, Cardinality
+from .. import rsf, Register, Entry, Record, Cardinality
 from ..exceptions import RegistersException
 from . import utils
 from .utils import error
@@ -39,14 +39,12 @@ def build_command(rsf_file, target):
         build
         └── web-colours
             ├── archive.zip
-            ├── commands
-            │  ├── 0.rsf
-            │  ├── 1.rsf
-            .  .
-            .  .
+            ├── commands.rsf
             ├── entries
-            │  ├── 1.rsf
-            │  ├── 2.rsf
+            │  ├── 1.csv
+            │  ├── 1.json
+            │  ├── 2.csv
+            │  ├── 2.json
             .  .
             .  .
             ├── items
@@ -109,7 +107,7 @@ def build_command(rsf_file, target):
         build_blobs(build_path.joinpath("items"), register)
         build_entries(build_path.joinpath("entries"), register)
         build_records(build_path.joinpath("records"), register)
-        build_commands(build_path.joinpath("commands"), register)
+        build_commands(build_path, register)
         build_context(build_path.joinpath("register"), register)
         build_archive(build_path, register)
         build_openapi(build_path, register)
@@ -207,22 +205,8 @@ def build_commands(path: Path, register: Register):
     """
     Generates all RSF files.
     """
-
-    if path.exists():
-        path.rmdir()
-
-    path.mkdir()
-
-    with open(f"{path}/0.rsf", "w") as stream:
+    with open(f"{path}/commands.rsf", "w") as stream:
         stream.write(rsf.dump(register.commands))
-
-    with utils.progressbar(range(1, register.log.size),
-                           label='Building commands') as bar:
-        for idx in bar:
-            commands = log.slice(register.log, idx)
-
-            with open(f"{path}/{idx}.rsf", "w") as stream:
-                stream.write(rsf.dump(commands))
 
 
 def build_context(path: Path, register: Register):
