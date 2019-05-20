@@ -20,6 +20,7 @@ from .. import rsf, Register, Entry, Record, Cardinality
 from ..exceptions import RegistersException
 from . import utils
 from .utils import error
+from jinja2 import Environment, PackageLoader
 
 
 @click.command(name="build")
@@ -268,11 +269,10 @@ def build_cloudfoundry(path: Path, register: Register):
     build_target_resource("nginx.conf", "nginx", path)
     build_lua_resources(path)
 
-    with open(path.joinpath("default.conf"), "w") as handle:
-        filename = "data/nginx/default.conf"
-        conf = pkg_resources.resource_string("registers", filename)
-        res = conf.decode("utf-8").replace("listen 80", "listen {{port}}")
-        handle.write(res)
+    with open(path.joinpath("nginx.conf"), "w") as handle:
+        env = Environment(loader=PackageLoader("registers", "data"))
+        template = env.get_template("nginx/nginx.conf")
+        handle.write(template.render(port="{{port}}"))
 
     with open(path.joinpath("manifest.yml"), "w") as handle:
         filename = "data/cloudfoundry/manifest.yml"
@@ -288,12 +288,15 @@ def build_docker(path: Path):
     Creates files for the docker target.
     """
 
-    build_target_resource("default.conf", "nginx", path)
     build_target_resource("Dockerfile", "docker", path)
     build_target_resource("docker-compose.yml", "docker", path)
     build_target_resource("mime.types", "nginx", path)
-
     build_lua_resources(path)
+
+    with open(path.joinpath("default.conf"), "w") as handle:
+        env = Environment(loader=PackageLoader("registers", "data"))
+        template = env.get_template("nginx/default.conf")
+        handle.write(template.render(port=80))
 
 
 def build_lua_resources(path: Path):
