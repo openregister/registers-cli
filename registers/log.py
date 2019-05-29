@@ -175,6 +175,9 @@ def slice(log: Log, start_position: int) -> List[Command]:
     return commands
 
 
+Result = Tuple[Optional[Entry], Optional[ValidationError]]
+
+
 def _collect_command(command: Command,
                      data: Log,
                      metadata: Log,
@@ -198,26 +201,24 @@ def _collect_command(command: Command,
             raise OrphanEntry(entry)
 
         if entry.scope == Scope.System:
-            metadata.insert(blob)
-            record = metadata.snapshot().get(entry.key)
-            (_, err) = _collect_entry(entry, record)
+            _collect_pair(entry, blob, metadata, errors, relaxed)
 
-            if err and not relaxed:
-                errors.append(err)
-            else:
-                metadata.insert(entry)
         else:
-            data.insert(blob)
-            record = data.snapshot().get(entry.key)
-            (_, err) = _collect_entry(entry, record)
-
-            if err and not relaxed:
-                errors.append(err)
-            else:
-                data.insert(entry)
+            _collect_pair(entry, blob, data, errors, relaxed)
 
 
-Result = Tuple[Optional[Entry], Optional[ValidationError]]
+def _collect_pair(entry: Entry, blob: Blob, log: Log,
+                  errors: List[ValidationError], relaxed: bool):
+    log.insert(blob)
+
+    if not relaxed:
+        record = log.snapshot().get(entry.key)
+        (_, err) = _collect_entry(entry, record)
+
+        if err:
+            errors.append(err)
+
+    log.insert(entry)
 
 
 def _collect_entry(entry: Entry, record: Optional[Record]) -> Result:
