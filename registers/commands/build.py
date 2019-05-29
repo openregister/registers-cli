@@ -12,15 +12,15 @@ import json
 import shutil
 from zipfile import ZipFile
 from pathlib import Path
-from typing import List, Union, Dict
+from typing import List, Union, Dict, cast, IO
 import pkg_resources
 import yaml
 import click
+from jinja2 import Environment, PackageLoader
 from .. import rsf, Register, Entry, Record, Cardinality
 from ..exceptions import RegistersException
 from . import utils
 from .utils import error
-from jinja2 import Environment, PackageLoader
 
 
 @click.command(name="build")
@@ -270,14 +270,16 @@ def build_cloudfoundry(path: Path, register: Register):
     build_lua_resources(path)
 
     with open(path.joinpath("nginx.conf"), "w") as handle:
-        env = Environment(loader=PackageLoader("registers", "data"))
+        env = Environment(loader=PackageLoader("registers", "data"),
+                          autoescape=True)
         template = env.get_template("nginx/nginx.conf")
         handle.write(template.render(port="{{port}}"))
 
     with open(path.joinpath("manifest.yml"), "w") as handle:
         filename = "data/cloudfoundry/manifest.yml"
-        stream = pkg_resources.resource_stream("registers", filename)
-        manifest = yaml.load(stream, Loader=yaml.BaseLoader)  # type: ignore
+        stream = cast(IO[str],
+                      pkg_resources.resource_stream("registers", filename))
+        manifest = yaml.safe_load(stream)
         manifest["applications"][0]["name"] = register.uid
 
         handle.write(yaml.dump(manifest))
@@ -294,7 +296,8 @@ def build_docker(path: Path):
     build_lua_resources(path)
 
     with open(path.joinpath("default.conf"), "w") as handle:
-        env = Environment(loader=PackageLoader("registers", "data"))
+        env = Environment(loader=PackageLoader("registers", "data"),
+                          autoescape=True)
         template = env.get_template("nginx/default.conf")
         handle.write(template.render(port=80))
 
