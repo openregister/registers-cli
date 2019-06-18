@@ -15,6 +15,8 @@ setup(
     python_requires=">=3.6",
     install_requires=[
         "Click~=7.0",
+        "PyYAML~=5.1",
+        "Jinja2~=2.10",
     ],
     entry_points="""
         [console_scripts]
