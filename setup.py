@@ -9,7 +9,14 @@ setup(
     packages=find_packages(),
     package_data={
         '': ["LICENSE"],
-        'registers': ['data/_redirects', 'data/openapi.json']
+        'registers': [
+            'data/_redirects',
+            'data/openapi.json',
+            'data/cloudfoundry/*',
+            'data/docker/*',
+            'data/netlify/*',
+            'data/nginx/*',
+            ],
     },
     include_package_data=True,
     python_requires=">=3.6",
