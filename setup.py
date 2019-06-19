@@ -16,6 +16,7 @@ setup(
             'data/docker/*',
             'data/netlify/*',
             'data/nginx/*',
+            'data/nginx/lua/*',
             ],
     },
     include_package_data=True,
