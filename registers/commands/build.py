@@ -24,12 +24,18 @@ from .utils import error
 
 
 @click.command(name="build")
-@click.argument("rsf_file", type=click.Path(exists=True))
+@click.argument("rsf_files", type=click.Path(exists=True),
+                nargs=-1, required=True)
 @click.option("--target", type=click.Choice(["netlify",
                                              "cloudfoundry",
                                              "docker"]),
               help="Publication target")
-def build_command(rsf_file, target):
+def build_command(rsf_files, target):
+    for rsf_file in rsf_files:
+        build_register(rsf_file, target)
+
+
+def build_register(rsf_file, target):
     """
     Builds the static version of the register. Derives all required files such
     that a static web server conforms to the REST API specification (V1).
@@ -113,7 +119,9 @@ def build_command(rsf_file, target):
         build_archive(build_path, register)
         build_openapi(build_path, register)
 
-        click.secho("Build complete.", fg="green", bold=True)
+        click.secho("Built {} for target {}".format(register.uid, target),
+                    fg="green",
+                    bold=True)
 
     except RegistersException as err:
         error(str(err))
